@@ -20,12 +20,24 @@ import java.util.Map;
 
 public class TokenInfo {
 
+    private final int id;
+    private final String token;
     private final IntSet occoursInDocuments;
     private final Map<String, IntSet> followUpTokensWithDocuments;
 
-    public TokenInfo() {
+    public TokenInfo(int aID, String aToken) {
+        id = aID;
+        token = aToken;
         occoursInDocuments = new IntSet();
         followUpTokensWithDocuments = new HashMap<>();
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public String getToken() {
+        return token;
     }
 
     public void registerWithDocument(int aDocumentID) {

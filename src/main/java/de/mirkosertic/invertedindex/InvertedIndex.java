@@ -24,27 +24,32 @@ public class InvertedIndex {
 
     private final List<IndexedDoc> docs;
     final Map<String, TokenInfo> tokens;
+    final Map<Integer, TokenInfo> tokensByIndex;
 
     public InvertedIndex() {
         docs = new ArrayList<>();
         tokens = new HashMap<>();
+        tokensByIndex = new HashMap<>();
     }
 
     public int newDocument(Document aDocument) {
-        IndexedDoc theDoc = new IndexedDoc(aDocument.getName());
+        IndexedDoc theDoc = new IndexedDoc(aDocument.getName(), docs.size());
         docs.add(theDoc);
-        return docs.size() - 1;
+        return theDoc.getDocumentID();
     }
 
     public void addTokenToDocument(int aCurrentDocumentId, String aPreviousToken, String aToken) {
 
         TokenInfo theInfo = tokens.get(aToken);
         if (theInfo == null) {
-            theInfo = new TokenInfo();
+            theInfo = new TokenInfo(tokens.size(), aToken);
             tokens.put(aToken, theInfo);
+            tokensByIndex.put(theInfo.getId(), theInfo);
         }
 
         theInfo.registerWithDocument(aCurrentDocumentId);
+
+        docs.get(aCurrentDocumentId).addTokenIdToSequence(theInfo.getId());
 
         if (aPreviousToken != null) {
             TokenInfo thePreviousToken = tokens.get(aPreviousToken);
@@ -75,5 +80,19 @@ public class InvertedIndex {
         List<IndexedDoc> theResult = new ArrayList<>();
         aDocumentIDs.forEach(t -> theResult.add(docs.get(t)));
         return theResult;
+    }
+
+    public String rebuildContentFor(IndexedDoc aDocument) {
+
+        StringBuilder theResult = new StringBuilder();
+        aDocument.handleTokenSequence(t -> {
+            if (theResult.length() > 0) {
+                theResult.append(" ");
+            }
+            TokenInfo theInfo = tokensByIndex.get(t);
+            theResult.append(theInfo.getToken());
+        });
+
+        return theResult.toString();
     }
 }

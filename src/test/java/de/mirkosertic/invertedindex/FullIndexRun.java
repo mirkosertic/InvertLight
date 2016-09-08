@@ -49,6 +49,8 @@ public class FullIndexRun {
         System.out.println(theResult.getSize());
         for (int i=0;i<theResult.getSize();i++) {
             System.out.println(theResult.getDoc(i).getName());
+
+            System.out.println(theIndex.rebuildContentFor(theResult.getDoc(i)));
         }
 
         while(true) {

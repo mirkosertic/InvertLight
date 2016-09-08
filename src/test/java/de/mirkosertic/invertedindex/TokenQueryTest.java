@@ -35,6 +35,7 @@ public class TokenQueryTest {
         Result theResult1 = theIndex.query(new TokenQuery(new String[] {"as"}));
         assertEquals(1, theResult1.getSize());
         assertEquals("doc2", theResult1.getDoc(0).getName());
+        assertEquals("test this as this is good", theIndex.rebuildContentFor(theResult1.getDoc(0)));
 
         assertEquals(2, theIndex.query(new TokenQuery(new String[] {"this"})).getSize());
         assertEquals(2, theIndex.query(new TokenQuery(new String[] {"this", "is"})).getSize());

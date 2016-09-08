@@ -23,7 +23,8 @@ public class IndexedDocTest {
 
     @Test
     public void test() {
-        IndexedDoc theDoc = new IndexedDoc("test");
+        IndexedDoc theDoc = new IndexedDoc("test", 10);
         assertEquals("test", theDoc.getName());
+        assertEquals(10, theDoc.getDocumentID());
     }
 }

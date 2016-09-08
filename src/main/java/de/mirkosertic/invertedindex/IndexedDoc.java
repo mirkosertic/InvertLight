@@ -15,16 +15,37 @@
  */
 package de.mirkosertic.invertedindex;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
+
 public class IndexedDoc {
 
     private final String name;
-    private String firstToken;
+    private final int documentID;
+    private final List<Integer> tokenSequence;
 
-    public IndexedDoc(String aName) {
+    public IndexedDoc(String aName, int aDocumentID) {
         name = aName;
+        documentID = aDocumentID;
+        tokenSequence = new ArrayList<>();
+    }
+
+    public int getDocumentID() {
+        return documentID;
     }
 
     public String getName() {
         return name;
+    }
+
+    public void addTokenIdToSequence(int aTokenID) {
+        tokenSequence.add(aTokenID);
+    }
+
+    public void handleTokenSequence(Consumer<Integer> aConsumer) {
+        for (int i=0;i<tokenSequence.size();i++) {
+            aConsumer.accept(tokenSequence.get(i));
+        }
     }
 }
