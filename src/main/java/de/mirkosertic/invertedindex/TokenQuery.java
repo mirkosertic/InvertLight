@@ -15,9 +15,6 @@
  */
 package de.mirkosertic.invertedindex;
 
-import java.util.HashSet;
-import java.util.Set;
-
 public class TokenQuery implements Query {
 
     public final String[] tokens;
@@ -27,7 +24,7 @@ public class TokenQuery implements Query {
     }
 
     public Result queryWith(InvertedIndex aInvertedIndex) {
-        Set<Integer> theResult = new HashSet<Integer>();
+        IntSet theResult = new IntSet();
         for (int i=0;i<tokens.length;i++) {
             TokenInfo theInfo = aInvertedIndex.getTokenInfoFor(tokens[i]);
             if (theInfo == null) {
@@ -36,7 +33,7 @@ public class TokenQuery implements Query {
             if (i==0) {
                 theResult = theInfo.getOccoursInDocuments();
             } else {
-                theResult.retainAll(theInfo.getOccoursInDocuments());
+                theResult = theResult.retainAll(theInfo.getOccoursInDocuments());
             }
         }
         return new Result(aInvertedIndex.getDocumentsByID(theResult));

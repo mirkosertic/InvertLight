@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class InvertedIndex {
 
@@ -72,11 +71,9 @@ public class InvertedIndex {
         return tokens.get(aToken);
     }
 
-    public List<IndexedDoc> getDocumentsByID(Set<Integer> aDocumentIDs) {
+    public List<IndexedDoc> getDocumentsByID(IntSet aDocumentIDs) {
         List<IndexedDoc> theResult = new ArrayList<>();
-        for (int theIndex : aDocumentIDs) {
-            theResult.add(docs.get(theIndex));
-        }
+        aDocumentIDs.forEach(t -> theResult.add(docs.get(t)));
         return theResult;
     }
 }

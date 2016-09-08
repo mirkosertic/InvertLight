@@ -50,5 +50,9 @@ public class FullIndexRun {
         for (int i=0;i<theResult.getSize();i++) {
             System.out.println(theResult.getDoc(i).getName());
         }
+
+        while(true) {
+            theResult = theIndex.query(new TokenSequenceQuery(new String[] {"introduction","to", "aop"}));
+        }
     }
 }

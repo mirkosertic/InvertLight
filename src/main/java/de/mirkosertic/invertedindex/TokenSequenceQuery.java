@@ -15,8 +15,6 @@
  */
 package de.mirkosertic.invertedindex;
 
-import java.util.Set;
-
 public class TokenSequenceQuery implements Query {
 
     public final String[] tokens;
@@ -27,21 +25,22 @@ public class TokenSequenceQuery implements Query {
 
     public Result queryWith(InvertedIndex aInvertedIndex) {
 
-        Set<Integer> theDocumentIDs = null;
+        IntSet theDocumentIDs = null;
+        TokenInfo theLastTokenInfo = null;
         for (int i=0; i<tokens.length;i++) {
             if (i == 0) {
-                TokenInfo theInfo = aInvertedIndex.getTokenInfoFor(tokens[i]);
-                if (theInfo == null) {
+                theLastTokenInfo = aInvertedIndex.getTokenInfoFor(tokens[i]);
+                if (theLastTokenInfo == null) {
                     return Result.EMPTY;
                 }
-                theDocumentIDs = theInfo.getOccoursInDocuments();
+                theDocumentIDs = theLastTokenInfo.getOccoursInDocuments();
             } else {
-                TokenInfo thePreviousTokenInfo = aInvertedIndex.getTokenInfoFor(tokens[i-1]);
-                Set<Integer> theFollowUpDocuments = thePreviousTokenInfo.getFollowUpDocumentsFor(tokens[i]);
+                IntSet theFollowUpDocuments = theLastTokenInfo.getFollowUpDocumentsFor(tokens[i]);
                 if (theFollowUpDocuments == null) {
                     return Result.EMPTY;
                 }
-                theDocumentIDs.removeAll(theFollowUpDocuments);
+                theDocumentIDs = theDocumentIDs.retainAll(theFollowUpDocuments);
+                theLastTokenInfo = aInvertedIndex.getTokenInfoFor(tokens[i]);
             }
         }
 

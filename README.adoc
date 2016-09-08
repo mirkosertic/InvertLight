@@ -1,0 +1,11 @@
+= InvertLight
+
+== Overview
+
+InvertLight is a simple implementation of a fulltext search engine based on inverted indices.
+
+InvertLight itself does no content extraction, we have to use another framework for this purpose. It just provides the required data structures and allows you to query the fulltext index.
+
+== Technical Details
+
+TODO Comming soon...

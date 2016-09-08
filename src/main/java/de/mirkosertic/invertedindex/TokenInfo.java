@@ -16,17 +16,15 @@
 package de.mirkosertic.invertedindex;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 public class TokenInfo {
 
-    private final Set<Integer> occoursInDocuments;
-    private final Map<String, Set<Integer>> followUpTokensWithDocuments;
+    private final IntSet occoursInDocuments;
+    private final Map<String, IntSet> followUpTokensWithDocuments;
 
     public TokenInfo() {
-        occoursInDocuments = new HashSet<>();
+        occoursInDocuments = new IntSet();
         followUpTokensWithDocuments = new HashMap<>();
     }
 
@@ -34,14 +32,14 @@ public class TokenInfo {
         occoursInDocuments.add(aDocumentID);
     }
 
-    public Set<Integer> getOccoursInDocuments() {
+    public IntSet getOccoursInDocuments() {
         return occoursInDocuments;
     }
 
     public void registerFollowUpToken(int aDocumentID, String aToken) {
-        Set<Integer> theDocIDs = followUpTokensWithDocuments.get(aToken);
+        IntSet theDocIDs = followUpTokensWithDocuments.get(aToken);
         if (theDocIDs == null) {
-            theDocIDs = new HashSet<Integer>();
+            theDocIDs = new IntSet();
             theDocIDs.add(aDocumentID);
             followUpTokensWithDocuments.put(aToken, theDocIDs);
         } else {
@@ -49,7 +47,7 @@ public class TokenInfo {
         }
     }
 
-    public Set<Integer> getFollowUpDocumentsFor(String aToken) {
+    public IntSet getFollowUpDocumentsFor(String aToken) {
         return followUpTokensWithDocuments.get(aToken);
     }
 }
