@@ -15,24 +15,21 @@
  */
 package de.mirkosertic.invertedindex;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class Result {
 
-    public static final Result EMPTY = new Result(new ArrayList<>());
+    public static final Result EMPTY = new Result(new IndexedDoc[0]);
 
-    private final List<IndexedDoc> foundDocuments;
+    private final IndexedDoc[] foundDocuments;
 
-    public Result(List<IndexedDoc> aDocuments) {
+    public Result(IndexedDoc[] aDocuments) {
         foundDocuments = aDocuments;
     }
 
     public int getSize() {
-        return foundDocuments.size();
+        return foundDocuments.length;
     }
 
     public IndexedDoc getDoc(int aIndex) {
-        return foundDocuments.get(aIndex);
+        return foundDocuments[aIndex];
     }
 }

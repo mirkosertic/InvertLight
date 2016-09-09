@@ -26,7 +26,7 @@ public class TokenQuery implements Query {
     public Result queryWith(InvertedIndex aInvertedIndex) {
         IntSet theResult = new IntSet();
         for (int i=0;i<tokens.length;i++) {
-            TokenInfo theInfo = aInvertedIndex.getTokenInfoFor(tokens[i]);
+            PostingsList theInfo = aInvertedIndex.getPostingsListsForToken(tokens[i]);
             if (theInfo == null) {
                 return Result.EMPTY;
             }
@@ -36,6 +36,6 @@ public class TokenQuery implements Query {
                 theResult = theResult.retainAll(theInfo.getOccoursInDocuments());
             }
         }
-        return new Result(aInvertedIndex.getDocumentsByID(theResult));
+        return new Result(aInvertedIndex.getDocumentsByIds(theResult));
     }
 }

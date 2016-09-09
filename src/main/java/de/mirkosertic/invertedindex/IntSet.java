@@ -15,25 +15,21 @@
  */
 package de.mirkosertic.invertedindex;
 
-import java.util.function.Consumer;
+import java.util.Arrays;
+import java.util.function.BiConsumer;
 
 public class IntSet {
 
     private static final int SIZE_FACTOR = 128;
 
     private int[] data;
-    private int maxValue;
-    private int minValue;
     private int size;
 
     public IntSet() {
         data = new int[SIZE_FACTOR];
-        maxValue = Integer.MIN_VALUE;
-        minValue = Integer.MAX_VALUE;
     }
 
-    public void add(int aValue) {
-
+    private void internalAdd(int aValue) {
         if (contains(aValue)) {
             return;
         }
@@ -48,27 +44,53 @@ public class IntSet {
             data = theNewData;
             data[size++] = aValue;
         }
-
-        maxValue = Math.max(maxValue, aValue);
-        minValue = Math.min(minValue, aValue);
     }
 
-    public void forEach(Consumer<Integer> aConsumer) {
+    private void internalSort() {
+        Arrays.sort(data, 0 ,size);
+    }
+
+    public void add(int aValue) {
+        internalAdd(aValue);
+        internalSort();
+    }
+
+    public void forEach(BiConsumer<Integer, Integer> aConsumer) {
         for (int i=0;i<size;i++) {
-            aConsumer.accept(data[i]);
+            aConsumer.accept(i, data[i]);
         }
     }
 
     public boolean contains(int aValue) {
-        if (aValue > maxValue) {
+
+        if (size == 0) {
             return false;
         }
-        if (aValue < minValue) {
+
+        int theStart = size / 2;
+        int theCurrentValue = data[theStart];
+        if (theCurrentValue == aValue) {
+            return true;
+        }
+        if (theCurrentValue > aValue) {
+            while(--theStart>=0) {
+                theCurrentValue = data[theStart];
+                if (theCurrentValue == aValue) {
+                    return true;
+                }
+                if (theCurrentValue < aValue) {
+                    return false;
+                }
+            }
             return false;
         }
-        for (int i=0;i<data.length;i++) {
-            if (data[i] == aValue) {
+        while(++theStart < size) {
+            theCurrentValue = data[theStart];
+            if (theCurrentValue == aValue) {
                 return true;
+            }
+            if (theCurrentValue > aValue) {
+                return false;
             }
         }
         return false;
@@ -82,9 +104,10 @@ public class IntSet {
         IntSet theResult = new IntSet();
         for (int i=0;i<size;i++) {
             if (aOtherIntSet.contains(data[i])) {
-                theResult.add(data[i]);
+                theResult.internalAdd(data[i]);
             }
         }
+        theResult.internalSort();
         return theResult;
     }
 }

@@ -26,10 +26,10 @@ public class TokenSequenceQuery implements Query {
     public Result queryWith(InvertedIndex aInvertedIndex) {
 
         IntSet theDocumentIDs = null;
-        TokenInfo theLastTokenInfo = null;
+        PostingsList theLastTokenInfo = null;
         for (int i=0; i<tokens.length;i++) {
             if (i == 0) {
-                theLastTokenInfo = aInvertedIndex.getTokenInfoFor(tokens[i]);
+                theLastTokenInfo = aInvertedIndex.getPostingsListsForToken(tokens[i]);
                 if (theLastTokenInfo == null) {
                     return Result.EMPTY;
                 }
@@ -40,10 +40,10 @@ public class TokenSequenceQuery implements Query {
                     return Result.EMPTY;
                 }
                 theDocumentIDs = theDocumentIDs.retainAll(theFollowUpDocuments);
-                theLastTokenInfo = aInvertedIndex.getTokenInfoFor(tokens[i]);
+                theLastTokenInfo = aInvertedIndex.getPostingsListsForToken(tokens[i]);
             }
         }
 
-        return new Result(aInvertedIndex.getDocumentsByID(theDocumentIDs));
+        return new Result(aInvertedIndex.getDocumentsByIds(theDocumentIDs));
     }
 }

@@ -35,10 +35,10 @@ public class FullIndexRun {
             theTokenizer.process(new Document(theFile.getName(), theFileContent));
         }
 
-        System.out.println(theIndex.getTokenCount() + " unique tokens");
+        System.out.println(theIndex.getTokenCount() + " unique postings");
         System.out.println(theIndex.getDocumentCount() + " documents");
 
-        theIndex.tokens.entrySet().stream().sorted(
+        theIndex.postings.entrySet().stream().sorted(
                 (o1, o2) -> ((Integer)o1.getValue().getOccoursInDocuments().size()).compareTo(o2.getValue().getOccoursInDocuments().size())).forEach(t -> {
             System.out.println(t.getKey() + " -> " + t.getValue().getOccoursInDocuments().size());
         });
@@ -52,6 +52,16 @@ public class FullIndexRun {
 
             System.out.println(theIndex.rebuildContentFor(theResult.getDoc(i)));
         }
+
+        long theCount = 1000000;
+        long theStart = System.currentTimeMillis();
+        for (int i=0;i<theCount;i++) {
+            theResult = theIndex.query(new TokenSequenceQuery(new String[] {"introduction","to", "aop"}));
+        }
+        double theDuration = System.currentTimeMillis() - theStart;
+
+        System.out.println(theCount + " Queries took " + theDuration + "ms");
+        System.out.println(theDuration / theCount);
 
         while(true) {
             theResult = theIndex.query(new TokenSequenceQuery(new String[] {"introduction","to", "aop"}));

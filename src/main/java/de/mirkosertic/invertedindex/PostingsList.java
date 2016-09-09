@@ -18,14 +18,14 @@ package de.mirkosertic.invertedindex;
 import java.util.HashMap;
 import java.util.Map;
 
-public class TokenInfo {
+public class PostingsList {
 
     private final int id;
     private final String token;
     private final IntSet occoursInDocuments;
     private final Map<String, IntSet> followUpTokensWithDocuments;
 
-    public TokenInfo(int aID, String aToken) {
+    public PostingsList(int aID, String aToken) {
         id = aID;
         token = aToken;
         occoursInDocuments = new IntSet();

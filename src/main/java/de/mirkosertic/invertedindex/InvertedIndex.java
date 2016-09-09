@@ -23,13 +23,13 @@ import java.util.Map;
 public class InvertedIndex {
 
     private final List<IndexedDoc> docs;
-    final Map<String, TokenInfo> tokens;
-    final Map<Integer, TokenInfo> tokensByIndex;
+    final Map<String, PostingsList> postings;
+    final Map<Integer, PostingsList> postingsByDocumentID;
 
     public InvertedIndex() {
         docs = new ArrayList<>();
-        tokens = new HashMap<>();
-        tokensByIndex = new HashMap<>();
+        postings = new HashMap<>();
+        postingsByDocumentID = new HashMap<>();
     }
 
     public int newDocument(Document aDocument) {
@@ -40,11 +40,11 @@ public class InvertedIndex {
 
     public void addTokenToDocument(int aCurrentDocumentId, String aPreviousToken, String aToken) {
 
-        TokenInfo theInfo = tokens.get(aToken);
+        PostingsList theInfo = postings.get(aToken);
         if (theInfo == null) {
-            theInfo = new TokenInfo(tokens.size(), aToken);
-            tokens.put(aToken, theInfo);
-            tokensByIndex.put(theInfo.getId(), theInfo);
+            theInfo = new PostingsList(postings.size(), aToken);
+            postings.put(aToken, theInfo);
+            postingsByDocumentID.put(theInfo.getId(), theInfo);
         }
 
         theInfo.registerWithDocument(aCurrentDocumentId);
@@ -52,7 +52,7 @@ public class InvertedIndex {
         docs.get(aCurrentDocumentId).addTokenIdToSequence(theInfo.getId());
 
         if (aPreviousToken != null) {
-            TokenInfo thePreviousToken = tokens.get(aPreviousToken);
+            PostingsList thePreviousToken = postings.get(aPreviousToken);
             thePreviousToken.registerFollowUpToken(aCurrentDocumentId, aToken);
         }
     }
@@ -65,20 +65,20 @@ public class InvertedIndex {
     }
 
     public int getTokenCount() {
-        return tokens.size();
+        return postings.size();
     }
 
     public Result query(Query aQuery) {
         return aQuery.queryWith(this);
     }
 
-    public TokenInfo getTokenInfoFor(String aToken) {
-        return tokens.get(aToken);
+    public PostingsList getPostingsListsForToken(String aToken) {
+        return postings.get(aToken);
     }
 
-    public List<IndexedDoc> getDocumentsByID(IntSet aDocumentIDs) {
-        List<IndexedDoc> theResult = new ArrayList<>();
-        aDocumentIDs.forEach(t -> theResult.add(docs.get(t)));
+    public IndexedDoc[] getDocumentsByIds(IntSet aDocumentIDs) {
+        IndexedDoc[] theResult = new IndexedDoc[aDocumentIDs.size()];
+        aDocumentIDs.forEach((i, t) -> theResult[i] = docs.get(t));
         return theResult;
     }
 
@@ -89,7 +89,7 @@ public class InvertedIndex {
             if (theResult.length() > 0) {
                 theResult.append(" ");
             }
-            TokenInfo theInfo = tokensByIndex.get(t);
+            PostingsList theInfo = postingsByDocumentID.get(t);
             theResult.append(theInfo.getToken());
         });
 
