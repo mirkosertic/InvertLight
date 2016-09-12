@@ -9,3 +9,11 @@ InvertLight itself does no content extraction, we have to use another framework 
 == Technical Details
 
 TODO Comming soon...
+
+=== Performance Metrics (Beta)
+
+[options=header]
+|===
+|Number of Documents |Size on Disk | Number of Tokens | Java Heap Size | Phrase Query time
+|84 |27.8 MB |121.317 |114 MB |1ms
+|===
