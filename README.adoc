@@ -12,7 +12,18 @@ InvertLight itself does no content extraction, we have to use another framework 
 
 [source,java]
 ----
-include::src/test/java/de/mirkosertic/invertedindex/InitializeIndexExample.java[lines=20..31]
+public static void main(String[] args) {
+    // Initialize the index
+    InvertedIndex theIndex = new InvertedIndex();
+    UpdateIndexHandler theIndexHandler = new UpdateIndexHandler(theIndex);
+    Tokenizer theTokenizer = new Tokenizer(new ToLowercaseTokenHandler(theIndexHandler));
+
+    // Add some content
+    theTokenizer.process(new Document("doc1", "this is a test"));
+
+    // And perform a query
+    Result theResult = theIndex.query(new TokenSequenceQuery(new String[] {"is", "this"}));
+}
 ----
 
 === Performance Metrics (Beta)
