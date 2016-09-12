@@ -26,6 +26,9 @@ public class InvertedIndex {
     private final List<IndexedDoc> docs;
     private final TokenDictionary tokenDictionary;
     final Map<Integer, PostingsList> postings;
+    private int currentDocumentId;
+    private int currentPosition;
+    private PostingsList previousPostings;
 
     public InvertedIndex() {
         tokenDictionary = new TokenDictionary();
@@ -36,22 +39,33 @@ public class InvertedIndex {
     public int newDocument(Document aDocument) {
         IndexedDoc theDoc = new IndexedDoc(aDocument.getName(), docs.size());
         docs.add(theDoc);
+        currentDocumentId = theDoc.getDocumentID();
+        currentPosition = 0;
+        previousPostings = null;
         return theDoc.getDocumentID();
     }
 
-    public void addTokenToDocument(int aCurrentDocumentId, String aToken, int aPosition) {
+    public PostingsList addTokenToDocument(String aToken) {
 
         int theTokenID = tokenDictionary.getTokenIDFor(aToken);
         PostingsList theInfo = postings.get(theTokenID);
         if (theInfo == null) {
-            theInfo = new PostingsList();
+            theInfo = new PostingsList(postings.size());
             postings.put(theTokenID, theInfo);
         }
+        theInfo.registerWithDocument(currentDocumentId, currentPosition);
 
-        theInfo.registerWithDocument(aCurrentDocumentId, aPosition);
+        if (previousPostings != null) {
+            previousPostings.registerFollowUpPostingFor(theInfo, currentDocumentId);
+        }
+
+        previousPostings = theInfo;
+        currentPosition++;
+
+        return theInfo;
     }
 
-    public void finishDocument(int aDocumentID) {
+    public void finishDocument() {
     }
 
     public long getDocumentCount() {

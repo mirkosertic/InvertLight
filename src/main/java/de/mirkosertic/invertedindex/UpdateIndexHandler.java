@@ -18,31 +18,20 @@ package de.mirkosertic.invertedindex;
 public class UpdateIndexHandler implements TokenHandler {
 
     private final InvertedIndex invertedIndex;
-    private int currentDocumentId;
-    private String previousToken;
-    private int currentPosition;
 
     public UpdateIndexHandler(InvertedIndex aIndex) {
         invertedIndex = aIndex;
-        previousToken = null;
-        currentDocumentId = -1;
-        currentPosition = 0;
     }
 
     public long beginDocument(Document aDocument) {
-        currentDocumentId = invertedIndex.newDocument(aDocument);
-        currentPosition = 0;
-        return currentDocumentId;
+        return invertedIndex.newDocument(aDocument);
     }
 
     public void handleToken(String aToken) {
-        invertedIndex.addTokenToDocument(currentDocumentId, aToken, currentPosition++);
-        previousToken = aToken;
+        invertedIndex.addTokenToDocument(aToken);
     }
 
     public void endDocument() {
-        invertedIndex.finishDocument(currentDocumentId);
-        currentDocumentId = -1;
-        previousToken = null;
+        invertedIndex.finishDocument();
     }
 }

@@ -15,23 +15,18 @@
  */
 package de.mirkosertic.invertedindex;
 
-public class Result {
+public class InitializeIndexExample {
 
-    public static final Result EMPTY = new Result(new IndexedDoc[0], null);
+    public static void main(String[] args) {
+        // Initialize the index
+        InvertedIndex theIndex = new InvertedIndex();
+        UpdateIndexHandler theIndexHandler = new UpdateIndexHandler(theIndex);
+        Tokenizer theTokenizer = new Tokenizer(new ToLowercaseTokenHandler(theIndexHandler));
 
-    private final IndexedDoc[] foundDocuments;
-    private final PostingsList lastPosting;
+        // Add some content
+        theTokenizer.process(new Document("doc1", "this is a test"));
 
-    public Result(IndexedDoc[] aDocuments, PostingsList aLastPosting) {
-        foundDocuments = aDocuments;
-        lastPosting = aLastPosting;
-    }
-
-    public int getSize() {
-        return foundDocuments.length;
-    }
-
-    public IndexedDoc getDoc(int aIndex) {
-        return foundDocuments[aIndex];
+        // And perform a query
+        Result theResult = theIndex.query(new TokenSequenceQuery(new String[] {"is", "this"}));
     }
 }

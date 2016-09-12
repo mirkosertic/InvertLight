@@ -16,6 +16,7 @@
 package de.mirkosertic.invertedindex;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.function.BiConsumer;
 
 public class IntSet {
@@ -27,6 +28,16 @@ public class IntSet {
 
     public IntSet() {
         data = new int[SIZE_FACTOR];
+    }
+
+    public IntSet(Collection<Integer> aCollection) {
+        data = new int[aCollection.size()];
+        int counter = 0;
+        for (int theValue : aCollection) {
+            data[counter++] = theValue;
+        }
+        size = aCollection.size();
+        internalSort();
     }
 
     private void internalAdd(int aValue) {

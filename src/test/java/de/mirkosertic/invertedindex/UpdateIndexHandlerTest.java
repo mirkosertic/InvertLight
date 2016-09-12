@@ -15,7 +15,6 @@
  */
 package de.mirkosertic.invertedindex;
 
-import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.inOrder;
@@ -42,8 +41,8 @@ public class UpdateIndexHandlerTest {
 
         InOrder theOrder = inOrder(theIndex);
         theOrder.verify(theIndex).newDocument(same(theDocument));
-        theOrder.verify(theIndex).addTokenToDocument(eq(100), eq("token1"), eq(0));
-        theOrder.verify(theIndex).addTokenToDocument(eq(100), eq("token2"), eq(1));
-        theOrder.verify(theIndex).finishDocument(eq(100));
+        theOrder.verify(theIndex).addTokenToDocument(eq("token1"));
+        theOrder.verify(theIndex).addTokenToDocument(eq("token2"));
+        theOrder.verify(theIndex).finishDocument();
     }
 }

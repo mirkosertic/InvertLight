@@ -35,45 +35,23 @@ public class TokenSequenceQuery implements Query {
                 }
                 theDocumentIDs = theLastPosting.getOccoursInDocuments();
             } else {
-
-                // Search for Documents containing the follow up tokens
+               // Search for Documents containing the follow up tokens
                 PostingsList theNextPostings = aInvertedIndex.getPostingsListsForToken(tokens[i]);
 
-                // Now, we take only the postings wich affect the same documents
-                IntSet theSameDocuments = theDocumentIDs.retainAll(theNextPostings.getOccoursInDocuments());
-                if (theSameDocuments.size() == 0) {
+                IntSet theFollowUpDocuments = theLastPosting.getFollowUpDocumentsByPosting(theNextPostings);
+                if (theFollowUpDocuments == null || theFollowUpDocuments.size() == 0) {
                     return Result.EMPTY;
                 }
 
-                IntSet theFoundDocuments = getSameDocumentsWithRightTokenOrder(theLastPosting, theNextPostings, theSameDocuments);
-                if (theFoundDocuments.size() == 0) {
+                theDocumentIDs = theDocumentIDs.retainAll(theFollowUpDocuments);
+                if (theDocumentIDs.size() == 0) {
                     return Result.EMPTY;
                 }
 
-                theDocumentIDs = theFoundDocuments;
                 theLastPosting = theNextPostings;
             }
         }
 
-        return new Result(aInvertedIndex.getDocumentsByIds(theDocumentIDs));
-    }
-
-    private IntSet getSameDocumentsWithRightTokenOrder(PostingsList aPreviousPosting, PostingsList aCurrentPosting,
-            IntSet theSameDocuments) {
-        IntSet theFoundDocuments = new IntSet();
-
-        theSameDocuments.forEach((sameDocumentIndex, sameDocumentID) -> {
-            IntSet thePreviousPositions = aPreviousPosting.getPositionsForDocument(sameDocumentID);
-            IntSet theCurrentPositions = aCurrentPosting.getPositionsForDocument(sameDocumentID);
-
-            // For every previous position, we must find a current position + 1
-            thePreviousPositions.forEach((index, value) -> {
-                if (theCurrentPositions.contains(value + 1)) {
-                    theFoundDocuments.add(sameDocumentID);
-                }
-            });
-        });
-
-        return theFoundDocuments;
+        return new Result(aInvertedIndex.getDocumentsByIds(theDocumentIDs), theLastPosting);
     }
 }

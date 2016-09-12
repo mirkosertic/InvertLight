@@ -6,14 +6,19 @@ InvertLight is a simple implementation of a fulltext search engine based on inve
 
 InvertLight itself does no content extraction, we have to use another framework for this purpose. It just provides the required data structures and allows you to query the fulltext index.
 
-== Technical Details
+== API Usage
 
-TODO Comming soon...
+=== Initialize and query an inverted index
+
+[source,java]
+----
+include::src/test/java/de/mirkosertic/invertedindex/InitializeIndexExample.java[lines=20..31]
+----
 
 === Performance Metrics (Beta)
 
 [options=header]
 |===
 |Number of Documents |Size on Disk | Number of Tokens | Java Heap Size | Phrase Query time
-|84 |27.8 MB |121.317 |114 MB |1ms
+|84 |27.8 MB |121.317 |26.7 MB |287ms / 100000 Queries
 |===

@@ -20,12 +20,34 @@ import java.util.Map;
 
 public class PostingsList {
 
+    private final int id;
     private Map<Integer, IntSet> documentToPositions;
-    private final IntSet occoursInDocuments;
+    private Map<PostingsList, IntSet> followUpPostingsByDocuments;
 
-    public PostingsList() {
+    public PostingsList(int aId) {
         documentToPositions = new HashMap<>();
-        occoursInDocuments = new IntSet();
+        id = aId;
+        followUpPostingsByDocuments = new HashMap<>();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+
+        PostingsList that = (PostingsList) o;
+
+        if (id != that.id)
+            return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return id;
     }
 
     public void registerWithDocument(int aDocumentID, int aPosition) {
@@ -37,14 +59,26 @@ public class PostingsList {
         } else {
             thePositions.add(aPosition);
         }
-        occoursInDocuments.add(aDocumentID);
     }
 
     public IntSet getOccoursInDocuments() {
-        return occoursInDocuments;
+        return new IntSet(documentToPositions.keySet());
     }
 
     public IntSet getPositionsForDocument(int aDocumentID) {
         return documentToPositions.get(aDocumentID);
+    }
+
+    public void registerFollowUpPostingFor(PostingsList aFollowUpPosting, int aDocumentID) {
+        IntSet theFollowUps = followUpPostingsByDocuments.get(aFollowUpPosting);
+        if (theFollowUps == null) {
+            theFollowUps = new IntSet();
+            followUpPostingsByDocuments.put(aFollowUpPosting, theFollowUps);
+        }
+        theFollowUps.add(aDocumentID);
+    }
+
+    public IntSet getFollowUpDocumentsByPosting(PostingsList aPosting) {
+        return followUpPostingsByDocuments.get(aPosting);
     }
 }
