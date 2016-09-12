@@ -20,27 +20,23 @@ import java.util.Map;
 
 public class PostingsList {
 
-    private final int id;
-    private final String token;
+    private Map<Integer, IntSet> documentToPositions;
     private final IntSet occoursInDocuments;
-    private final Map<String, IntSet> followUpTokensWithDocuments;
 
-    public PostingsList(int aID, String aToken) {
-        id = aID;
-        token = aToken;
+    public PostingsList() {
+        documentToPositions = new HashMap<>();
         occoursInDocuments = new IntSet();
-        followUpTokensWithDocuments = new HashMap<>();
     }
 
-    public int getId() {
-        return id;
-    }
-
-    public String getToken() {
-        return token;
-    }
-
-    public void registerWithDocument(int aDocumentID) {
+    public void registerWithDocument(int aDocumentID, int aPosition) {
+        IntSet thePositions = documentToPositions.get(aDocumentID);
+        if (thePositions == null) {
+            thePositions = new IntSet();
+            thePositions.add(aPosition);
+            documentToPositions.put(aDocumentID, thePositions);
+        } else {
+            thePositions.add(aPosition);
+        }
         occoursInDocuments.add(aDocumentID);
     }
 
@@ -48,18 +44,7 @@ public class PostingsList {
         return occoursInDocuments;
     }
 
-    public void registerFollowUpToken(int aDocumentID, String aToken) {
-        IntSet theDocIDs = followUpTokensWithDocuments.get(aToken);
-        if (theDocIDs == null) {
-            theDocIDs = new IntSet();
-            theDocIDs.add(aDocumentID);
-            followUpTokensWithDocuments.put(aToken, theDocIDs);
-        } else {
-            theDocIDs.add(aDocumentID);
-        }
-    }
-
-    public IntSet getFollowUpDocumentsFor(String aToken) {
-        return followUpTokensWithDocuments.get(aToken);
+    public IntSet getPositionsForDocument(int aDocumentID) {
+        return documentToPositions.get(aDocumentID);
     }
 }

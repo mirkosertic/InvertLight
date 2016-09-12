@@ -19,17 +19,18 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 public class InvertedIndex {
 
     private final List<IndexedDoc> docs;
-    final Map<String, PostingsList> postings;
-    final Map<Integer, PostingsList> postingsByDocumentID;
+    private final TokenDictionary tokenDictionary;
+    final Map<Integer, PostingsList> postings;
 
     public InvertedIndex() {
+        tokenDictionary = new TokenDictionary();
         docs = new ArrayList<>();
         postings = new HashMap<>();
-        postingsByDocumentID = new HashMap<>();
     }
 
     public int newDocument(Document aDocument) {
@@ -38,23 +39,16 @@ public class InvertedIndex {
         return theDoc.getDocumentID();
     }
 
-    public void addTokenToDocument(int aCurrentDocumentId, String aPreviousToken, String aToken) {
+    public void addTokenToDocument(int aCurrentDocumentId, String aToken, int aPosition) {
 
-        PostingsList theInfo = postings.get(aToken);
+        int theTokenID = tokenDictionary.getTokenIDFor(aToken);
+        PostingsList theInfo = postings.get(theTokenID);
         if (theInfo == null) {
-            theInfo = new PostingsList(postings.size(), aToken);
-            postings.put(aToken, theInfo);
-            postingsByDocumentID.put(theInfo.getId(), theInfo);
+            theInfo = new PostingsList();
+            postings.put(theTokenID, theInfo);
         }
 
-        theInfo.registerWithDocument(aCurrentDocumentId);
-
-        docs.get(aCurrentDocumentId).addTokenIdToSequence(theInfo.getId());
-
-        if (aPreviousToken != null) {
-            PostingsList thePreviousToken = postings.get(aPreviousToken);
-            thePreviousToken.registerFollowUpToken(aCurrentDocumentId, aToken);
-        }
+        theInfo.registerWithDocument(aCurrentDocumentId, aPosition);
     }
 
     public void finishDocument(int aDocumentID) {
@@ -73,7 +67,7 @@ public class InvertedIndex {
     }
 
     public PostingsList getPostingsListsForToken(String aToken) {
-        return postings.get(aToken);
+        return postings.get(tokenDictionary.getTokenIDFor(aToken));
     }
 
     public IndexedDoc[] getDocumentsByIds(IntSet aDocumentIDs) {
@@ -84,13 +78,23 @@ public class InvertedIndex {
 
     public String rebuildContentFor(IndexedDoc aDocument) {
 
+        Map<Integer, Integer> thePositionsToTokens = new TreeMap<>();
+        postings.entrySet().forEach(aEntry -> {
+            IntSet thePositions = aEntry.getValue().getPositionsForDocument(aDocument.getDocumentID());
+            if (thePositions != null) {
+                thePositions.forEach((aIndex, aValue) -> {
+                   thePositionsToTokens.put(aValue, aEntry.getKey());
+                });
+            }
+        });
+
         StringBuilder theResult = new StringBuilder();
-        aDocument.handleTokenSequence(t -> {
+        thePositionsToTokens.entrySet().forEach(aEntry -> {
+            String theToken = tokenDictionary.getTokenForID(aEntry.getValue());
             if (theResult.length() > 0) {
                 theResult.append(" ");
             }
-            PostingsList theInfo = postingsByDocumentID.get(t);
-            theResult.append(theInfo.getToken());
+            theResult.append(theToken);
         });
 
         return theResult.toString();

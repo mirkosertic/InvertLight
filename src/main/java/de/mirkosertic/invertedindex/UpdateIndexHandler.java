@@ -20,20 +20,23 @@ public class UpdateIndexHandler implements TokenHandler {
     private final InvertedIndex invertedIndex;
     private int currentDocumentId;
     private String previousToken;
+    private int currentPosition;
 
     public UpdateIndexHandler(InvertedIndex aIndex) {
         invertedIndex = aIndex;
         previousToken = null;
         currentDocumentId = -1;
+        currentPosition = 0;
     }
 
     public long beginDocument(Document aDocument) {
         currentDocumentId = invertedIndex.newDocument(aDocument);
+        currentPosition = 0;
         return currentDocumentId;
     }
 
     public void handleToken(String aToken) {
-        invertedIndex.addTokenToDocument(currentDocumentId, previousToken, aToken);
+        invertedIndex.addTokenToDocument(currentDocumentId, aToken, currentPosition++);
         previousToken = aToken;
     }
 

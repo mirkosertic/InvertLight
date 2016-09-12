@@ -26,14 +26,14 @@ public class TokenQuery implements Query {
     public Result queryWith(InvertedIndex aInvertedIndex) {
         IntSet theResult = new IntSet();
         for (int i=0;i<tokens.length;i++) {
-            PostingsList theInfo = aInvertedIndex.getPostingsListsForToken(tokens[i]);
-            if (theInfo == null) {
+            PostingsList thePosting = aInvertedIndex.getPostingsListsForToken(tokens[i]);
+            if (thePosting == null) {
                 return Result.EMPTY;
             }
             if (i==0) {
-                theResult = theInfo.getOccoursInDocuments();
+                theResult = thePosting.getOccoursInDocuments();
             } else {
-                theResult = theResult.retainAll(theInfo.getOccoursInDocuments());
+                theResult = theResult.retainAll(thePosting.getOccoursInDocuments());
             }
         }
         return new Result(aInvertedIndex.getDocumentsByIds(theResult));

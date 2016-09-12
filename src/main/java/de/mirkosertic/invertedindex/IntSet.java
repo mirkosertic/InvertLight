@@ -20,7 +20,7 @@ import java.util.function.BiConsumer;
 
 public class IntSet {
 
-    private static final int SIZE_FACTOR = 128;
+    private static final int SIZE_FACTOR = 16;
 
     private int[] data;
     private int size;

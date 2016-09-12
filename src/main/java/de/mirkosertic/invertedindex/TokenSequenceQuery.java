@@ -26,24 +26,54 @@ public class TokenSequenceQuery implements Query {
     public Result queryWith(InvertedIndex aInvertedIndex) {
 
         IntSet theDocumentIDs = null;
-        PostingsList theLastTokenInfo = null;
+        PostingsList theLastPosting = null;
         for (int i=0; i<tokens.length;i++) {
             if (i == 0) {
-                theLastTokenInfo = aInvertedIndex.getPostingsListsForToken(tokens[i]);
-                if (theLastTokenInfo == null) {
+                theLastPosting = aInvertedIndex.getPostingsListsForToken(tokens[i]);
+                if (theLastPosting == null) {
                     return Result.EMPTY;
                 }
-                theDocumentIDs = theLastTokenInfo.getOccoursInDocuments();
+                theDocumentIDs = theLastPosting.getOccoursInDocuments();
             } else {
-                IntSet theFollowUpDocuments = theLastTokenInfo.getFollowUpDocumentsFor(tokens[i]);
-                if (theFollowUpDocuments == null) {
+
+                // Search for Documents containing the follow up tokens
+                PostingsList theNextPostings = aInvertedIndex.getPostingsListsForToken(tokens[i]);
+
+                // Now, we take only the postings wich affect the same documents
+                IntSet theSameDocuments = theDocumentIDs.retainAll(theNextPostings.getOccoursInDocuments());
+                if (theSameDocuments.size() == 0) {
                     return Result.EMPTY;
                 }
-                theDocumentIDs = theDocumentIDs.retainAll(theFollowUpDocuments);
-                theLastTokenInfo = aInvertedIndex.getPostingsListsForToken(tokens[i]);
+
+                IntSet theFoundDocuments = getSameDocumentsWithRightTokenOrder(theLastPosting, theNextPostings, theSameDocuments);
+                if (theFoundDocuments.size() == 0) {
+                    return Result.EMPTY;
+                }
+
+                theDocumentIDs = theFoundDocuments;
+                theLastPosting = theNextPostings;
             }
         }
 
         return new Result(aInvertedIndex.getDocumentsByIds(theDocumentIDs));
+    }
+
+    private IntSet getSameDocumentsWithRightTokenOrder(PostingsList aPreviousPosting, PostingsList aCurrentPosting,
+            IntSet theSameDocuments) {
+        IntSet theFoundDocuments = new IntSet();
+
+        theSameDocuments.forEach((sameDocumentIndex, sameDocumentID) -> {
+            IntSet thePreviousPositions = aPreviousPosting.getPositionsForDocument(sameDocumentID);
+            IntSet theCurrentPositions = aCurrentPosting.getPositionsForDocument(sameDocumentID);
+
+            // For every previous position, we must find a current position + 1
+            thePreviousPositions.forEach((index, value) -> {
+                if (theCurrentPositions.contains(value + 1)) {
+                    theFoundDocuments.add(sameDocumentID);
+                }
+            });
+        });
+
+        return theFoundDocuments;
     }
 }

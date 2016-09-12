@@ -53,7 +53,7 @@ public class FullIndexRun {
             System.out.println(theIndex.rebuildContentFor(theResult.getDoc(i)));
         }
 
-        long theCount = 1000000;
+        long theCount = 1000;
         long theStart = System.currentTimeMillis();
         for (int i=0;i<theCount;i++) {
             theResult = theIndex.query(new TokenSequenceQuery(new String[] {"introduction","to", "aop"}));
