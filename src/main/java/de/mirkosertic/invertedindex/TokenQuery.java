@@ -19,7 +19,7 @@ public class TokenQuery implements Query {
 
     public final String[] tokens;
 
-    public TokenQuery(String[] aTokens) {
+    public TokenQuery(String... aTokens) {
         this.tokens = aTokens;
     }
 
@@ -48,7 +48,7 @@ public class TokenQuery implements Query {
 
     private IntSet getDocumentsForToken(String aToken, InvertedIndex aIndex) {
         IntSet theResult = new IntSet();
-        for (String theToken : aIndex.rewriteToken(aToken)) {
+        for (String theToken : aIndex.getTokenDictionary().rewriteToken(aToken)) {
             PostingsList thePosting = aIndex.getPostingsListForToken(theToken);
             if (thePosting != null) {
                 theResult = theResult.addAll(thePosting.getOccoursInDocuments());

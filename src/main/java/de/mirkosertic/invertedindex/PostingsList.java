@@ -17,17 +17,24 @@ package de.mirkosertic.invertedindex;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public class PostingsList {
 
+    private final int tokenId;
     private final int id;
     private Map<Integer, IntSet> documentToPositions;
     private Map<PostingsList, IntSet> followUpPostingsByDocuments;
 
-    public PostingsList(int aId) {
+    public PostingsList(int aId, int aTokenID) {
         documentToPositions = new HashMap<>();
         id = aId;
+        tokenId = aTokenID;
         followUpPostingsByDocuments = new HashMap<>();
+    }
+
+    public int getTokenId() {
+        return tokenId;
     }
 
     @Override
@@ -80,5 +87,9 @@ public class PostingsList {
 
     public IntSet getFollowUpDocumentsByPosting(PostingsList aPosting) {
         return followUpPostingsByDocuments.get(aPosting);
+    }
+
+    public void forEachFollowingPosting(Consumer<Map.Entry<PostingsList, IntSet>> aConsumer) {
+        followUpPostingsByDocuments.entrySet().stream().forEach(aConsumer);
     }
 }

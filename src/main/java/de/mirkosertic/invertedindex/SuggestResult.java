@@ -15,21 +15,17 @@
  */
 package de.mirkosertic.invertedindex;
 
-public class TokenSequenceQuery extends AbstractSequenceProcessor implements Query {
+public class SuggestResult {
 
-    public final String[] tokens;
+    public static final SuggestResult EMPTY = new SuggestResult(new String[0]);
 
-    public TokenSequenceQuery(String... aTokens) {
-        this.tokens = aTokens;
+    private final String[] suggestions;
+
+    public SuggestResult(String[] aSuggestions) {
+        suggestions = aSuggestions;
     }
 
-    public Result queryWith(InvertedIndex aInvertedIndex) {
-
-        ProcessorResult theResult = process(aInvertedIndex, tokens);
-        if (theResult == null) {
-            return Result.EMPTY;
-        }
-
-        return new Result(aInvertedIndex.getDocumentsByIds(theResult.documentIDs));
+    public String[] getSuggestions() {
+        return suggestions;
     }
 }

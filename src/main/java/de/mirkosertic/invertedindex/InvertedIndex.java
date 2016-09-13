@@ -50,7 +50,7 @@ public class InvertedIndex {
         int theTokenID = tokenDictionary.getTokenIDFor(aToken);
         PostingsList theInfo = postings.get(theTokenID);
         if (theInfo == null) {
-            theInfo = new PostingsList(postings.size());
+            theInfo = new PostingsList(postings.size(), theTokenID);
             postings.put(theTokenID, theInfo);
         }
         theInfo.registerWithDocument(currentDocumentId, currentPosition);
@@ -78,6 +78,10 @@ public class InvertedIndex {
 
     public Result query(Query aQuery) {
         return aQuery.queryWith(this);
+    }
+
+    public SuggestResult suggest(Suggester aSuggester) {
+        return aSuggester.suggestWith(this);
     }
 
     public PostingsList getPostingsListForToken(String aToken) {
@@ -114,7 +118,7 @@ public class InvertedIndex {
         return theResult.toString();
     }
 
-    public String[] rewriteToken(String aToken) {
-        return tokenDictionary.rewriteToken(aToken);
+    public TokenDictionary getTokenDictionary() {
+        return tokenDictionary;
     }
 }

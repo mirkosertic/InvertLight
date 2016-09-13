@@ -30,19 +30,19 @@ public class TokenQueryTest {
         theTokenizer.process(new Document("doc1", "this is a test"));
         theTokenizer.process(new Document("doc2", "test this as this is good"));
 
-        assertEquals(0, theIndex.query(new TokenQuery(new String[] {"notfound"})).getSize());
+        assertEquals(0, theIndex.query(new TokenQuery("notfound")).getSize());
 
-        Result theResult1 = theIndex.query(new TokenQuery(new String[] {"as"}));
+        Result theResult1 = theIndex.query(new TokenQuery("as"));
         assertEquals(1, theResult1.getSize());
         assertEquals("doc2", theResult1.getDoc(0).getName());
         assertEquals("test this as this is good", theIndex.rebuildContentFor(theResult1.getDoc(0)));
 
-        assertEquals(2, theIndex.query(new TokenQuery(new String[] {"this"})).getSize());
-        assertEquals(2, theIndex.query(new TokenQuery(new String[] {"this", "is"})).getSize());
-        assertEquals(2, theIndex.query(new TokenQuery(new String[] {"this", "i?"})).getSize());
-        assertEquals(2, theIndex.query(new TokenQuery(new String[] {"thi*", "i?"})).getSize());
-        assertEquals(0, theIndex.query(new TokenQuery(new String[] {"thi*", "notfound?"})).getSize());
+        assertEquals(2, theIndex.query(new TokenQuery("this")).getSize());
+        assertEquals(2, theIndex.query(new TokenQuery("this", "is")).getSize());
+        assertEquals(2, theIndex.query(new TokenQuery("this", "i?")).getSize());
+        assertEquals(2, theIndex.query(new TokenQuery("thi*", "i?")).getSize());
+        assertEquals(0, theIndex.query(new TokenQuery("thi*", "notfound?")).getSize());
 
-        assertEquals(2, theIndex.query(new TokenQuery(new String[] {"is", "this"})).getSize());
+        assertEquals(2, theIndex.query(new TokenQuery("is", "this")).getSize());
     }
 }
