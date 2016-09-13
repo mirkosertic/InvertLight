@@ -77,6 +77,6 @@ Examples:
 
 [options=header]
 |===
-|Number of Documents |Size on Disk | Number of Tokens | Java Heap Size | Phrase Query time
-|84 |27.8 MB |121.317 |26.7 MB |508ms / 100000 Queries
+|Number of Documents |Size on Disk(plain text) | Number of Tokens | Java Heap Size | Phrase Query time
+|846 |73 MB |383477 |86 MB |960ms / 100000 Queries
 |===
