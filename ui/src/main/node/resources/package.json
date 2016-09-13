@@ -20,5 +20,8 @@
   "homepage": "https://github.com/mirkosertic/InvertLight",
   "devDependencies": {
     "electron-prebuilt": "^1.2.0"
+  },
+  "dependencies": {
+    "pdfjs-dist": ">=1.5"
   }
 }
