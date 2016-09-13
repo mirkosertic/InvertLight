@@ -15,6 +15,9 @@
  */
 package de.mirkosertic.invertedindex;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class TokenSequenceQuery implements Query {
 
     public final String[] tokens;
@@ -26,20 +29,38 @@ public class TokenSequenceQuery implements Query {
     public Result queryWith(InvertedIndex aInvertedIndex) {
 
         IntSet theDocumentIDs = null;
-        PostingsList theLastPosting = null;
+        Map<String, PostingsList> theLastPostings = new HashMap<>();
+
         for (int i=0; i<tokens.length;i++) {
             if (i == 0) {
-                theLastPosting = aInvertedIndex.getPostingsListsForToken(tokens[i]);
-                if (theLastPosting == null) {
+                theDocumentIDs = new IntSet();
+                for (String theToken : aInvertedIndex.rewriteToken(tokens[i])) {
+                    PostingsList thePosting = aInvertedIndex.getPostingsListForToken(theToken);
+                    if (thePosting != null) {
+                        theLastPostings.put(theToken, thePosting);
+                        theDocumentIDs = theDocumentIDs.addAll(thePosting.getOccoursInDocuments());
+                    }
+                }
+                if (theDocumentIDs.size() == 0) {
                     return Result.EMPTY;
                 }
-                theDocumentIDs = theLastPosting.getOccoursInDocuments();
-            } else {
-               // Search for Documents containing the follow up tokens
-                PostingsList theNextPostings = aInvertedIndex.getPostingsListsForToken(tokens[i]);
 
-                IntSet theFollowUpDocuments = theLastPosting.getFollowUpDocumentsByPosting(theNextPostings);
-                if (theFollowUpDocuments == null || theFollowUpDocuments.size() == 0) {
+            } else {
+                Map<String, PostingsList> theNextLastPostings = new HashMap<>();
+                IntSet theFollowUpDocuments = new IntSet();
+
+                for (String theToken : aInvertedIndex.rewriteToken(tokens[i])) {
+                    PostingsList theNextPosting = aInvertedIndex.getPostingsListForToken(theToken);
+                    for (Map.Entry<String, PostingsList> theEntry : theLastPostings.entrySet()) {
+                        IntSet theNextDocument = theEntry.getValue().getFollowUpDocumentsByPosting(theNextPosting);
+                        if (theNextDocument != null) {
+                            theFollowUpDocuments = theFollowUpDocuments.addAll(theNextDocument);
+                            theNextLastPostings.put(theToken, theNextPosting);
+                        }
+                    }
+                }
+
+                if (theFollowUpDocuments.size() == 0) {
                     return Result.EMPTY;
                 }
 
@@ -48,10 +69,10 @@ public class TokenSequenceQuery implements Query {
                     return Result.EMPTY;
                 }
 
-                theLastPosting = theNextPostings;
+                theLastPostings = theNextLastPostings;
             }
         }
 
-        return new Result(aInvertedIndex.getDocumentsByIds(theDocumentIDs), theLastPosting);
+        return new Result(aInvertedIndex.getDocumentsByIds(theDocumentIDs));
     }
 }

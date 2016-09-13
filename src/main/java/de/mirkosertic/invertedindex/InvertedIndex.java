@@ -80,7 +80,7 @@ public class InvertedIndex {
         return aQuery.queryWith(this);
     }
 
-    public PostingsList getPostingsListsForToken(String aToken) {
+    public PostingsList getPostingsListForToken(String aToken) {
         return postings.get(tokenDictionary.getTokenIDFor(aToken));
     }
 
@@ -112,5 +112,9 @@ public class InvertedIndex {
         });
 
         return theResult.toString();
+    }
+
+    public String[] rewriteToken(String aToken) {
+        return tokenDictionary.rewriteToken(aToken);
     }
 }

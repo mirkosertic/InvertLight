@@ -30,6 +30,14 @@ public class IntSet {
         data = new int[SIZE_FACTOR];
     }
 
+    public IntSet(IntSet aSet) {
+        data = new int[aSet.data.length];
+        size = aSet.size();
+        for (int i=0;i<size;i++) {
+            data[i] = aSet.data[i];
+        }
+    }
+
     public IntSet(Collection<Integer> aCollection) {
         data = new int[aCollection.size()];
         int counter = 0;
@@ -118,6 +126,15 @@ public class IntSet {
                 theResult.internalAdd(data[i]);
             }
         }
+        theResult.internalSort();
+        return theResult;
+    }
+
+    public IntSet addAll(IntSet aSet) {
+        IntSet theResult = new IntSet(this);
+        aSet.forEach((index, value) -> {
+            theResult.internalAdd(value);
+        });
         theResult.internalSort();
         return theResult;
     }

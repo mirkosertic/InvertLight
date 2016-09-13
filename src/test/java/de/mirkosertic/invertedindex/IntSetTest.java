@@ -48,6 +48,7 @@ public class IntSetTest {
         theSet.add(30);
         assertFalse(theSet.contains(999));
         assertFalse(theSet.contains(9));
+        assertFalse(theSet.contains(25));
         assertTrue(theSet.contains(10));
         assertTrue(theSet.contains(20));
         assertTrue(theSet.contains(30));
@@ -71,4 +72,24 @@ public class IntSetTest {
         assertTrue(theResult.contains(10));
         assertTrue(theResult.contains(20));
     }
+
+    @Test
+    public void testAddAll() {
+        IntSet theSet1 = new IntSet();
+        theSet1.add(1);
+        theSet1.add(10);
+
+        IntSet theSet2 = new IntSet();
+        theSet2.add(2);
+        theSet2.add(12);
+        theSet2.add(10);
+
+        IntSet theResult = theSet1.addAll(theSet2);
+        assertEquals(4, theResult.size());
+        assertTrue(theResult.contains(1));
+        assertTrue(theResult.contains(2));
+        assertTrue(theResult.contains(10));
+        assertTrue(theResult.contains(12));
+    }
+
 }

@@ -6,6 +6,8 @@ InvertLight is a simple implementation of a fulltext search engine based on inve
 
 InvertLight itself does no content extraction, we have to use another framework for this purpose. It just provides the required data structures and allows you to query the fulltext index.
 
+Everything is available under the Apache License, Version 2.0 .
+
 == API Usage
 
 === Initialize and query an inverted index
@@ -21,15 +23,60 @@ public static void main(String[] args) {
     // Add some content
     theTokenizer.process(new Document("doc1", "this is a test"));
 
-    // And perform a query
-    Result theResult = theIndex.query(new TokenSequenceQuery(new String[] {"is", "this"}));
+    // Token query
+    Result theResult1 = theIndex.query(new TokenQuery(new String[] {"this", "is"}));
+
+    // Token Query with wildcards
+    Result theResult2 = theIndex.query(new TokenQuery(new String[] {"th*", "i?"}));
+
+    // And perform a query for a sequence of token
+    Result theResult3 = theIndex.query(new TokenSequenceQuery(new String[] {"this", "is"}));
+
+    // Sequence query with wildcards
+    Result theResult4 = theIndex.query(new TokenSequenceQuery(new String[] {"th*s", "i?"}));
 }
 ----
+
+=== Query types
+
+InvertLight supports the following query types:
+
+|===
+|Query type |Description
+
+|Token Query
+|Searches for documents containing all tokens in any order.
+
+|Token Sequence Query
+|Searches for documents containing all tokens in exact order
+
+|===
+
+=== Wildcards
+
+InvertLight supports wildcards as query tokens. The following wildcards are supported:
+
+
+|===
+|Wildcard |Meaning
+
+|?
+|Any character
+
+|*
+|Many characters
+|===
+
+Examples:
+
+* "*at" matches "that", "hat", "damnrat" and so son
+* "th?s" matches "this"
+
 
 === Performance Metrics (Beta)
 
 [options=header]
 |===
 |Number of Documents |Size on Disk | Number of Tokens | Java Heap Size | Phrase Query time
-|84 |27.8 MB |121.317 |26.7 MB |287ms / 100000 Queries
+|84 |27.8 MB |121.317 |26.7 MB |508ms / 100000 Queries
 |===

@@ -26,7 +26,16 @@ public class InitializeIndexExample {
         // Add some content
         theTokenizer.process(new Document("doc1", "this is a test"));
 
-        // And perform a query
-        Result theResult = theIndex.query(new TokenSequenceQuery(new String[] {"is", "this"}));
+        // Token query
+        Result theResult1 = theIndex.query(new TokenQuery(new String[] {"this", "is"}));
+
+        // Token Query with wildcards
+        Result theResult2 = theIndex.query(new TokenQuery(new String[] {"th*", "i?"}));
+
+        // And perform a query for a sequence of token
+        Result theResult3 = theIndex.query(new TokenSequenceQuery(new String[] {"this", "is"}));
+
+        // Sequence query with wildcards
+        Result theResult4 = theIndex.query(new TokenSequenceQuery(new String[] {"th*s", "i?"}));
     }
 }

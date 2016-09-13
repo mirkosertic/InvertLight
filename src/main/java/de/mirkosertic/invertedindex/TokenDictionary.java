@@ -16,7 +16,11 @@
 package de.mirkosertic.invertedindex;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class TokenDictionary {
 
@@ -40,5 +44,26 @@ public class TokenDictionary {
 
     public String getTokenForID(int aTokenID) {
         return idToTokens.get(aTokenID);
+    }
+
+    public boolean isWildCard(String aToken) {
+        return aToken.contains("?") || aToken.contains("*");
+    }
+
+    public String[] rewriteToken(String aToken) {
+        if (!isWildCard(aToken)) {
+            return new String[] {aToken};
+        }
+        String theRegEx = aToken.replace("*",".*").replace("?",".");
+        Pattern thePattern = Pattern.compile(theRegEx);
+        Set<String> theTokens = new HashSet<>();
+        for (String theKey : tokensToID.keySet()) {
+            Matcher theMatcher = thePattern.matcher(theKey);
+            if (theMatcher.matches()) {
+                theTokens.add(theKey);
+            }
+        }
+
+        return theTokens.toArray(new String[theTokens.size()]);
     }
 }

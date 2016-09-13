@@ -17,14 +17,12 @@ package de.mirkosertic.invertedindex;
 
 public class Result {
 
-    public static final Result EMPTY = new Result(new IndexedDoc[0], null);
+    public static final Result EMPTY = new Result(new IndexedDoc[0]);
 
     private final IndexedDoc[] foundDocuments;
-    private final PostingsList lastPosting;
 
-    public Result(IndexedDoc[] aDocuments, PostingsList aLastPosting) {
+    public Result(IndexedDoc[] aDocuments) {
         foundDocuments = aDocuments;
-        lastPosting = aLastPosting;
     }
 
     public int getSize() {

@@ -28,7 +28,8 @@ public class TokenSequenceQueryTest {
         Tokenizer theTokenizer = new Tokenizer(theHandler);
 
         theTokenizer.process(new Document("doc1", "this is a test"));
-        theTokenizer.process(new Document("doc1", "test this as this maybe is good"));
+        theTokenizer.process(new Document("doc2", "test this as this maybe is good"));
+        theTokenizer.process(new Document("doc3", "that is a test"));
 
         assertEquals(0, theIndex.query(new TokenSequenceQuery(new String[] {"notfound"})).getSize());
 
@@ -37,5 +38,11 @@ public class TokenSequenceQueryTest {
         assertEquals("doc1", theResult1.getDoc(0).getName());
 
         assertEquals(0, theIndex.query(new TokenSequenceQuery(new String[] {"is", "this"})).getSize());
+
+        Result theResult2 = theIndex.query(new TokenSequenceQuery(new String[] {"th*", "i*"}));
+        assertEquals(2, theResult2.getSize());
+        assertEquals("doc1", theResult2.getDoc(0).getName());
+        assertEquals("doc3", theResult2.getDoc(1).getName());
+
     }
 }

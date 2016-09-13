@@ -25,18 +25,35 @@ public class TokenQuery implements Query {
 
     public Result queryWith(InvertedIndex aInvertedIndex) {
         IntSet theResult = new IntSet();
-        PostingsList theLastPosting = null;
+
         for (int i=0;i<tokens.length;i++) {
-            theLastPosting = aInvertedIndex.getPostingsListsForToken(tokens[i]);
-            if (theLastPosting == null) {
-                return Result.EMPTY;
-            }
+
             if (i==0) {
-                theResult = theLastPosting.getOccoursInDocuments();
+                theResult = getDocumentsForToken(tokens[i], aInvertedIndex);
+                if (theResult.size() == 0) {
+                    return Result.EMPTY;
+                }
+
             } else {
-                theResult = theResult.retainAll(theLastPosting.getOccoursInDocuments());
+                IntSet theNextDocuments = getDocumentsForToken(tokens[i], aInvertedIndex);
+                if (theNextDocuments.size() == 0) {
+                    return Result.EMPTY;
+                }
+
+                theResult = theResult.retainAll(theNextDocuments);
             }
         }
-        return new Result(aInvertedIndex.getDocumentsByIds(theResult), theLastPosting);
+        return new Result(aInvertedIndex.getDocumentsByIds(theResult));
+    }
+
+    private IntSet getDocumentsForToken(String aToken, InvertedIndex aIndex) {
+        IntSet theResult = new IntSet();
+        for (String theToken : aIndex.rewriteToken(aToken)) {
+            PostingsList thePosting = aIndex.getPostingsListForToken(theToken);
+            if (thePosting != null) {
+                theResult = theResult.addAll(thePosting.getOccoursInDocuments());
+            }
+        }
+        return theResult;
     }
 }

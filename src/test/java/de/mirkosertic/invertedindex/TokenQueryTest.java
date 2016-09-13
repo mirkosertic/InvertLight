@@ -39,6 +39,9 @@ public class TokenQueryTest {
 
         assertEquals(2, theIndex.query(new TokenQuery(new String[] {"this"})).getSize());
         assertEquals(2, theIndex.query(new TokenQuery(new String[] {"this", "is"})).getSize());
+        assertEquals(2, theIndex.query(new TokenQuery(new String[] {"this", "i?"})).getSize());
+        assertEquals(2, theIndex.query(new TokenQuery(new String[] {"thi*", "i?"})).getSize());
+        assertEquals(0, theIndex.query(new TokenQuery(new String[] {"thi*", "notfound?"})).getSize());
 
         assertEquals(2, theIndex.query(new TokenQuery(new String[] {"is", "this"})).getSize());
     }
