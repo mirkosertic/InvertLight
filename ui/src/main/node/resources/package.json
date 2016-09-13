@@ -1,0 +1,24 @@
+{
+  "name": "InvertLightUI",
+  "version": "@VERSION@",
+  "description": "The InvertLight Application",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mirkosertic/InvertLight.git"
+  },
+  "keywords": [
+  ],
+  "author": "Mirko Sertic",
+  "license": "CC0-1.0",
+  "bugs": {
+    "url": "https://github.com/mirkosertic/InvertLight/issues"
+  },
+  "homepage": "https://github.com/mirkosertic/InvertLight",
+  "devDependencies": {
+    "electron-prebuilt": "^1.2.0"
+  }
+}
