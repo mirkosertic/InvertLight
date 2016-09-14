@@ -13,16 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.mirkosertic.invertedindex.ui.electron.fs;
+package de.mirkosertic.invertedindex.ui.pdfjs;
 
 import org.teavm.jso.JSObject;
-import org.teavm.jso.typedarrays.Uint8Array;
 
-public abstract class FS implements JSObject {
+public abstract class PDFPage implements JSObject {
 
-    public abstract Stats statSync(String aPath);
-
-    public abstract String[] readdirSync(String aPath);
-
-    public abstract Uint8Array readFileSync(String aFile);
+    public abstract Promise<Content> getTextContent();
 }

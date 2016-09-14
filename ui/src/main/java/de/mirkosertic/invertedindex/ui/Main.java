@@ -15,35 +15,81 @@
  */
 package de.mirkosertic.invertedindex.ui;
 
-import de.mirkosertic.invertedindex.core.*;
+import de.mirkosertic.invertedindex.core.Document;
+import de.mirkosertic.invertedindex.core.InvertedIndex;
+import de.mirkosertic.invertedindex.core.SuggestResult;
+import de.mirkosertic.invertedindex.core.Suggester;
+import de.mirkosertic.invertedindex.core.TokenSequenceSuggester;
+import de.mirkosertic.invertedindex.core.Tokenizer;
+import de.mirkosertic.invertedindex.core.UpdateIndexHandler;
 import de.mirkosertic.invertedindex.ui.electron.Electron;
 import de.mirkosertic.invertedindex.ui.electron.Remote;
 import de.mirkosertic.invertedindex.ui.electron.fs.FS;
 import de.mirkosertic.invertedindex.ui.electron.fs.Stats;
 import de.mirkosertic.invertedindex.ui.electron.path.Path;
+import de.mirkosertic.invertedindex.ui.pdfjs.PDFJS;
+import de.mirkosertic.invertedindex.ui.pdfjs.TextItem;
 import org.teavm.jso.browser.Window;
+import org.teavm.jso.core.JSArray;
 import org.teavm.jso.dom.html.HTMLDocument;
 import org.teavm.jso.dom.html.HTMLElement;
-import org.teavm.jso.dom.xml.Element;
+import org.teavm.jso.typedarrays.Uint8Array;
 
 public class Main {
 
     private static final Window WINDOW = Window.current();
 
-    private static void visitFile(String aFileName, FS aFS, String aDelimiter) {
+    private static boolean visitFile(String aFileName, FS aFS, String aDelimiter, PDFJS aPDFJS, Tokenizer aTokenizer) {
         for (String thePath : aFS.readdirSync(aFileName)) {
 
             String theFullpath = aFileName + (aDelimiter.equals(":") ? "/" : "\\")  + thePath;
 
-            HTMLElement theDiv2 = WINDOW.getDocument().createElement("div");
-            theDiv2.setInnerHTML(theFullpath);
-            WINDOW.getDocument().getBody().appendChild(theDiv2);
+            try {
+                Stats theStats = aFS.statSync(theFullpath);
+                if (theStats.isDirectory()) {
+                    if (!visitFile(theFullpath, aFS, aDelimiter, aPDFJS, aTokenizer)) {
+                        return false;
+                    }
+                } else {
 
-            Stats theStats = aFS.statSync(theFullpath);
-            if (theStats.isDirectory()) {
-                visitFile(theFullpath, aFS, aDelimiter);
+                    if (theFullpath.toLowerCase().endsWith(".pdf")) {
+                        Uint8Array theData = aFS.readFileSync(theFullpath);
+
+                        HTMLElement theDiv2 = WINDOW.getDocument().createElement("div");
+                        theDiv2.setInnerHTML(theFullpath+" "+ theData.getByteLength() + " bytes");
+                        WINDOW.getDocument().getBody().appendChild(theDiv2);
+
+                        aPDFJS.getDocument(theData).then(aValue -> {
+
+                            HTMLElement theDiv3 = WINDOW.getDocument().createElement("div");
+                            theDiv3.setInnerHTML(aValue.getNumPages() + " Pages");
+                            WINDOW.getDocument().getBody().appendChild(theDiv3);
+
+                            for (int i=1;i<=aValue.getNumPages();i++) {
+                                aValue.getPage(i).then(aPage -> {
+                                    aPage.getTextContent().then(aContent -> {
+                                        StringBuilder theResult = new StringBuilder();
+                                        JSArray<TextItem> theItems = aContent.getItems();
+                                        for (int j=0;j<theItems.getLength();j++) {
+                                            theResult.append(theItems.get(j).getStr());
+                                        }
+
+                                        Document theDocument = new Document(theFullpath, theResult.toString());
+                                        aTokenizer.process(theDocument);
+
+                                        HTMLElement theDiv4 = WINDOW.getDocument().createElement("div");
+                                        theDiv4.setInnerHTML("sent to index");
+                                        WINDOW.getDocument().getBody().appendChild(theDiv4);
+                                    });
+                                });
+                            }
+                        });
+                    }
+                }
+            } catch (Exception e) {
             }
         }
+        return true;
     }
 
     public static void main(String[] args) {
@@ -58,18 +104,14 @@ public class Main {
 
         FS theFilesystem = theRemote.require("fs");
         Path thePath = theRemote.require("path");
-        visitFile(theUserHome, theFilesystem, thePath.getDelimiter());
+        PDFJS thePDF = theRemote.require("pdfjs-dist");
+        thePDF.initializeWorker();
 
         InvertedIndex theIndex = new InvertedIndex();
         UpdateIndexHandler theIndexHandler = new UpdateIndexHandler(theIndex);
         Tokenizer theTokenizer = new Tokenizer(theIndexHandler);
 
-        theTokenizer.process(new Document("doc1", "this is a test"));
-        theTokenizer.process(new Document("doc2", "this is another test"));
-        theTokenizer.process(new Document("doc3", "welcome home"));
-        theTokenizer.process(new Document("doc4", "nothing here"));
-        theTokenizer.process(new Document("doc4", "nothing already"));
-        theTokenizer.process(new Document("doc4", "nothing already there"));
+        visitFile(theUserHome, theFilesystem, thePath.getDelimiter(), thePDF, theTokenizer);
 
         Suggester theSuggester = new TokenSequenceSuggester("nothing");
         SuggestResult theResult = theIndex.suggest(theSuggester);
