@@ -15,7 +15,6 @@
  */
 package de.mirkosertic.invertedindex.ui;
 
-import de.mirkosertic.invertedindex.core.Document;
 import de.mirkosertic.invertedindex.core.InvertedIndex;
 import de.mirkosertic.invertedindex.core.SuggestResult;
 import de.mirkosertic.invertedindex.core.Suggester;
@@ -28,9 +27,7 @@ import de.mirkosertic.invertedindex.ui.electron.fs.FS;
 import de.mirkosertic.invertedindex.ui.electron.fs.Stats;
 import de.mirkosertic.invertedindex.ui.electron.path.Path;
 import de.mirkosertic.invertedindex.ui.pdfjs.PDFJS;
-import de.mirkosertic.invertedindex.ui.pdfjs.TextItem;
 import org.teavm.jso.browser.Window;
-import org.teavm.jso.core.JSArray;
 import org.teavm.jso.dom.html.HTMLDocument;
 import org.teavm.jso.dom.html.HTMLElement;
 import org.teavm.jso.typedarrays.Uint8Array;
@@ -47,6 +44,11 @@ public class Main {
             try {
                 Stats theStats = aFS.statSync(theFullpath);
                 if (theStats.isDirectory()) {
+
+                    HTMLElement theDiv2 = WINDOW.getDocument().createElement("div");
+                    theDiv2.setInnerHTML(theFullpath);
+                    WINDOW.getDocument().getBody().appendChild(theDiv2);
+
                     if (!visitFile(theFullpath, aFS, aDelimiter, aPDFJS, aTokenizer)) {
                         return false;
                     }
@@ -59,7 +61,7 @@ public class Main {
                         theDiv2.setInnerHTML(theFullpath+" "+ theData.getByteLength() + " bytes");
                         WINDOW.getDocument().getBody().appendChild(theDiv2);
 
-                        aPDFJS.getDocument(theData).then(aValue -> {
+/*                        aPDFJS.getDocument(theData).then(aValue -> {
 
                             HTMLElement theDiv3 = WINDOW.getDocument().createElement("div");
                             theDiv3.setInnerHTML(aValue.getNumPages() + " Pages");
@@ -83,7 +85,7 @@ public class Main {
                                     });
                                 });
                             }
-                        });
+                        });*/
                     }
                 }
             } catch (Exception e) {
@@ -111,7 +113,10 @@ public class Main {
         UpdateIndexHandler theIndexHandler = new UpdateIndexHandler(theIndex);
         Tokenizer theTokenizer = new Tokenizer(theIndexHandler);
 
-        visitFile(theUserHome, theFilesystem, thePath.getDelimiter(), thePDF, theTokenizer);
+        Thread theThread = new Thread(() -> {
+            visitFile(theUserHome, theFilesystem, thePath.getDelimiter(), thePDF, theTokenizer);
+        });
+        theThread.start();
 
         Suggester theSuggester = new TokenSequenceSuggester("nothing");
         SuggestResult theResult = theIndex.suggest(theSuggester);
