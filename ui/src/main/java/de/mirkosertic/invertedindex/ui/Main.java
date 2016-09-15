@@ -37,29 +37,32 @@ public class Main {
     private static final Window WINDOW = Window.current();
 
     private static boolean visitFile(String aFileName, FS aFS, String aDelimiter, PDFJS aPDFJS, Tokenizer aTokenizer) {
-        for (String thePath : aFS.readdirSync(aFileName)) {
+        try {
+            for (String thePath : aFS.readdirSync(aFileName)) {
 
-            String theFullpath = aFileName + (aDelimiter.equals(":") ? "/" : "\\")  + thePath;
+                String theFullpath = aFileName + (aDelimiter.equals(":") ? "/" : "\\") + thePath;
 
-            try {
-                Stats theStats = aFS.statSync(theFullpath);
-                if (theStats.isDirectory()) {
-
-                    HTMLElement theDiv2 = WINDOW.getDocument().createElement("div");
-                    theDiv2.setInnerHTML(theFullpath);
-                    WINDOW.getDocument().getBody().appendChild(theDiv2);
-
-                    if (!visitFile(theFullpath, aFS, aDelimiter, aPDFJS, aTokenizer)) {
-                        return false;
-                    }
-                } else {
-
-                    if (theFullpath.toLowerCase().endsWith(".pdf")) {
-                        Uint8Array theData = aFS.readFileSync(theFullpath);
+                try {
+                    Stats theStats = aFS.statSync(theFullpath);
+                    if (theStats.isDirectory()) {
 
                         HTMLElement theDiv2 = WINDOW.getDocument().createElement("div");
-                        theDiv2.setInnerHTML(theFullpath+" "+ theData.getByteLength() + " bytes");
+                        theDiv2.setInnerHTML(theFullpath);
                         WINDOW.getDocument().getBody().appendChild(theDiv2);
+
+                        if (!visitFile(theFullpath, aFS, aDelimiter, aPDFJS, aTokenizer)) {
+                            return false;
+                        }
+                    } else {
+
+                        if (theFullpath.toLowerCase().endsWith(".pdf")) {
+                            Uint8Array theData = aFS.readFileSync(theFullpath);
+
+                            HTMLElement theDiv2 = WINDOW.getDocument().createElement("div");
+                            theDiv2.setInnerHTML(theFullpath + " " + theData.getByteLength() + " bytes");
+                            WINDOW.getDocument().getBody().appendChild(theDiv2);
+
+                            Thread.yield();
 
 /*                        aPDFJS.getDocument(theData).then(aValue -> {
 
@@ -86,10 +89,12 @@ public class Main {
                                 });
                             }
                         });*/
+                        }
                     }
+                } catch (Exception e) {
                 }
-            } catch (Exception e) {
             }
+        } catch (Exception e) {
         }
         return true;
     }
