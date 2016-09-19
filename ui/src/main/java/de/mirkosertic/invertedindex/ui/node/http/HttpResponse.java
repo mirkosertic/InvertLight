@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.mirkosertic.invertedindex.ui.electron.path;
+package de.mirkosertic.invertedindex.ui.node.http;
 
 import org.teavm.jso.JSObject;
-import org.teavm.jso.JSProperty;
 
-public abstract class Path implements JSObject {
+public abstract class HttpResponse implements JSObject {
 
-    @JSProperty
-    public abstract String getDelimiter();
+    public abstract void writeHead(int aStatusCode);
+
+    public abstract void end(String aMessage);
 }

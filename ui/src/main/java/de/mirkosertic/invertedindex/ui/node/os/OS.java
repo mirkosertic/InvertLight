@@ -13,13 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.mirkosertic.invertedindex.ui.electron.fs;
+package de.mirkosertic.invertedindex.ui.node.os;
 
 import org.teavm.jso.JSObject;
 
-public abstract class Stats implements JSObject {
+public abstract class OS implements JSObject {
 
-    public abstract boolean isFile();
-
-    public abstract boolean isDirectory();
+    public abstract CPU[] cpus();
 }

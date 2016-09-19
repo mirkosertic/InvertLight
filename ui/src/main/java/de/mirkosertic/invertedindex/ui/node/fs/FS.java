@@ -13,22 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.mirkosertic.invertedindex.ui.electron;
+package de.mirkosertic.invertedindex.ui.node.fs;
 
-import de.mirkosertic.invertedindex.ui.electron.App;
-import de.mirkosertic.invertedindex.ui.electron.Dialog;
-import de.mirkosertic.invertedindex.ui.electron.Scope;
-import org.teavm.jso.JSBody;
-import org.teavm.jso.JSProperty;
+import org.teavm.jso.JSObject;
+import org.teavm.jso.typedarrays.Uint8Array;
 
-public abstract class Remote implements Scope {
+public abstract class FS implements JSObject {
 
-    @JSBody(params = {"aModuleName"}, script = "return require(aModuleName);")
-    public static native <T extends org.teavm.jso.JSObject> T require(String aModuleName);
+    public abstract Stats statSync(String aPath);
 
-    @JSProperty
-    public abstract Dialog getDialog();
+    public abstract String[] readdirSync(String aPath);
 
-    @JSProperty
-    public abstract App getApp();
+    public abstract Uint8Array readFileSync(String aFile);
 }

@@ -13,22 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.mirkosertic.invertedindex.ui.electron;
+package de.mirkosertic.invertedindex.ui.node.cluster;
 
-import de.mirkosertic.invertedindex.ui.electron.App;
-import de.mirkosertic.invertedindex.ui.electron.Dialog;
-import de.mirkosertic.invertedindex.ui.electron.Scope;
-import org.teavm.jso.JSBody;
+import org.teavm.jso.JSObject;
 import org.teavm.jso.JSProperty;
 
-public abstract class Remote implements Scope {
+public abstract class Cluster implements JSObject {
 
-    @JSBody(params = {"aModuleName"}, script = "return require(aModuleName);")
-    public static native <T extends org.teavm.jso.JSObject> T require(String aModuleName);
+    @JSProperty(value = "isMaster")
+    public abstract boolean isMaster();
+
+    public abstract void fork();
 
     @JSProperty
-    public abstract Dialog getDialog();
-
-    @JSProperty
-    public abstract App getApp();
+    public abstract Worker getWorker();
 }
