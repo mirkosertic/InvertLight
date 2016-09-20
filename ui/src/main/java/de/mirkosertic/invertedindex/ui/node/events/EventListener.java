@@ -13,15 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.mirkosertic.invertedindex.ui.pdfjs;
+package de.mirkosertic.invertedindex.ui.node.events;
 
+import org.teavm.jso.JSFunctor;
 import org.teavm.jso.JSObject;
-import org.teavm.jso.JSProperty;
 
-public abstract class PDFDocument implements JSObject {
+@JSFunctor
+public interface EventListener extends JSObject {
 
-    public abstract Promise<PDFPage> getPage(int aPage);
-
-    @JSProperty
-    public abstract int getNumPages();
+    void handleEvent(Event aEvent, JSObject aArg);
 }

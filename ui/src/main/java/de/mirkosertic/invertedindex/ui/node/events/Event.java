@@ -13,16 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.mirkosertic.invertedindex.ui.pdfjs;
+package de.mirkosertic.invertedindex.ui.node.events;
 
-import org.teavm.jso.JSBody;
 import org.teavm.jso.JSObject;
-import org.teavm.jso.typedarrays.Uint8Array;
 
-public abstract class PDFJS implements JSObject {
+public abstract class Event implements JSObject {
 
-    @JSBody(params = {}, script = "PDFJS.workerSrc = 'pdf.worker.js';")
-    public abstract void initializeWorker();
-
-    public abstract Promise<PDFDocument> getDocument(Uint8Array aData);
+    public abstract void preventDefault();
 }

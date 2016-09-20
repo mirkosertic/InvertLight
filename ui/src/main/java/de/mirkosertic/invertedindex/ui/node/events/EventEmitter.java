@@ -13,14 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.mirkosertic.invertedindex.ui.pdfjs;
+package de.mirkosertic.invertedindex.ui.node.events;
 
 import org.teavm.jso.JSObject;
-import org.teavm.jso.JSProperty;
-import org.teavm.jso.core.JSArray;
 
-public abstract class Content implements JSObject {
+public abstract class EventEmitter implements JSObject {
 
-    @JSProperty
-    public abstract JSArray<TextItem> getItems();
+    public abstract void on(String aChannel, EventListener aListener);
+
+    public abstract void send(String aChannel, JSObject aValue);
 }

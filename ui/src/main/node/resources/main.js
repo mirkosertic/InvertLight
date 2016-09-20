@@ -1,4 +1,8 @@
+'use strict';
+
 const electron = require('electron')
+const fs = require("fs");
+const pdfjs = require("pdfjs-dist")
 
 // Module to control application life.
 const app = electron.app
@@ -46,6 +50,47 @@ app.on('activate', function () {
     if (mainWindow === null) {
         createWindow()
     }
+})
+
+
+// Application specific long running tasks are run in the main process
+// to prevent the renderer process from blocking
+electron.ipcMain.on('load-document', (event, arg) => {
+    var theData = fs.readFileSync(arg)
+    event.sender.send("document-loaded", {filename: arg, data: theData})
+})
+
+electron.ipcMain.on('extract-pdf-text', (event, arg) => {
+    var theFileName = arg.filename
+    var theBinaryData = arg.data
+
+    pdfjs.getDocument(theBinaryData).then(aDocument => {
+        var thePageData = []
+        for (var thePageCounter = 1; thePageCounter <= aDocument.numPages; thePageCounter++) {
+            aDocument.getPage(thePageCounter).then(aPage => {
+                aPage.getTextContent().then(aTextContent => {
+                    var theItems = aTextContent.items
+                    var theText = ""
+                    var theItemCounter;
+                    for (theItemCounter=0;theItemCounter<theItems.length;theItemCounter++) {
+                        theText+=theItems[theItemCounter].str
+                    }
+
+                    thePageData[aPage.pageIndex-1] = theText
+
+                    if (thePageData.length == aDocument.numPages - 1) {
+                        var theFullText = ""
+                        var thePage
+                        for (thePage=0;thePage < aDocument.numPages;thePage++) {
+                            theFullText += thePageData[thePage]
+                        }
+
+                        event.sender.send("text-extracted", {filename: theFileName, data: theFullText});
+                    }
+                })
+            })
+        }
+    })
 })
 
 // In this file you can include the rest of your app's specific main process

@@ -13,18 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.mirkosertic.invertedindex.ui.pdfjs;
+package de.mirkosertic.invertedindex.ui;
 
-import org.teavm.jso.JSFunctor;
 import org.teavm.jso.JSObject;
+import org.teavm.jso.JSProperty;
+import org.teavm.jso.typedarrays.Uint8Array;
 
-public abstract class Promise<T> implements JSObject {
+public abstract class BinaryDocumentData implements JSObject {
 
-    @JSFunctor
-    public static interface Handler<T> extends JSObject {
+    @JSProperty
+    public abstract String getFilename();
 
-        void handle(T aValue);
-    }
-
-    public abstract void then(Handler<T> aHandler);
+    @JSProperty
+    public abstract Uint8Array getData();
 }

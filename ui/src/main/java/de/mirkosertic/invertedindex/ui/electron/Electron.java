@@ -15,10 +15,12 @@
  */
 package de.mirkosertic.invertedindex.ui.electron;
 
+import de.mirkosertic.invertedindex.ui.node.events.EventEmitter;
+
 import org.teavm.jso.JSBody;
 import org.teavm.jso.JSProperty;
 
-public abstract class Electron implements Scope {
+public abstract class Electron extends EventEmitter implements Scope {
 
     @JSBody(params = {}, script = "return (window && window.process && window.process.type);")
     public static native boolean available();
@@ -28,4 +30,7 @@ public abstract class Electron implements Scope {
 
     @JSProperty
     public abstract Remote getRemote();
+
+    @JSProperty
+    public abstract EventEmitter getIpcRenderer();
 }

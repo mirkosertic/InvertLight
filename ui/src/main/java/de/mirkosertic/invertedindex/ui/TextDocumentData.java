@@ -13,13 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.mirkosertic.invertedindex.ui.pdfjs;
+package de.mirkosertic.invertedindex.ui;
 
 import org.teavm.jso.JSObject;
 import org.teavm.jso.JSProperty;
 
-public abstract class TextItem implements JSObject {
+public abstract class TextDocumentData implements JSObject {
 
     @JSProperty
-    public abstract String getStr();
+    public abstract String getFilename();
+
+    @JSProperty
+    public abstract String getData();
 }

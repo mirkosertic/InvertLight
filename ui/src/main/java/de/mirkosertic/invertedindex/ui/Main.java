@@ -15,34 +15,28 @@
  */
 package de.mirkosertic.invertedindex.ui;
 
+import de.mirkosertic.invertedindex.core.Document;
 import de.mirkosertic.invertedindex.core.IndexedDoc;
 import de.mirkosertic.invertedindex.core.InvertedIndex;
 import de.mirkosertic.invertedindex.core.Result;
-import de.mirkosertic.invertedindex.core.SuggestResult;
-import de.mirkosertic.invertedindex.core.Suggester;
 import de.mirkosertic.invertedindex.core.ToLowercaseTokenHandler;
 import de.mirkosertic.invertedindex.core.TokenSequenceQuery;
-import de.mirkosertic.invertedindex.core.TokenSequenceSuggester;
 import de.mirkosertic.invertedindex.core.Tokenizer;
 import de.mirkosertic.invertedindex.core.UpdateIndexHandler;
 import de.mirkosertic.invertedindex.ui.electron.Electron;
 import de.mirkosertic.invertedindex.ui.electron.Remote;
-import de.mirkosertic.invertedindex.ui.node.cluster.Cluster;
-import de.mirkosertic.invertedindex.ui.node.cluster.Worker;
+import de.mirkosertic.invertedindex.ui.node.events.EventEmitter;
 import de.mirkosertic.invertedindex.ui.node.fs.FS;
 import de.mirkosertic.invertedindex.ui.node.fs.Stats;
-import de.mirkosertic.invertedindex.ui.node.http.Http;
-import de.mirkosertic.invertedindex.ui.node.os.OS;
 import de.mirkosertic.invertedindex.ui.node.path.Path;
-import de.mirkosertic.invertedindex.ui.pdfjs.PDFJS;
 import org.teavm.jso.browser.Window;
+import org.teavm.jso.core.JSString;
 import org.teavm.jso.dom.html.HTMLButtonElement;
 import org.teavm.jso.dom.html.HTMLDocument;
 import org.teavm.jso.dom.html.HTMLElement;
 import org.teavm.jso.dom.html.HTMLInputElement;
 
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.StringTokenizer;
 
 public class Main {
@@ -53,70 +47,55 @@ public class Main {
 
         Electron theElectron = Electron.require();
         Remote theRemote = theElectron.getRemote();
-        // Do some cluster work
-        final Cluster theCluster = theRemote.require("cluster");
-        if (theCluster.isMaster()) {
 
-            Console.log("Running on master");
+        String theUserHome = theRemote.getApp().getPath("home");
 
-            // Launch some worker threads
-            OS theOS = theRemote.require("os");
-            for (int i=0;i<theOS.cpus().length;i++) {
-                Console.log("Forking node " + i);
-                theCluster.fork();
+        theUserHome = "/home/sertic/ownCloud/eBooks/Test";
+
+        HTMLDocument theDocument = WINDOW.getDocument();
+        HTMLElement theDiv = theDocument.createElement("div");
+        theDiv.setInnerHTML(theUserHome);
+        theDocument.getBody().appendChild(theDiv);
+
+        FS theFilesystem = theRemote.require("fs");
+        Path thePath = theRemote.require("path");
+
+        InvertedIndex theIndex = new InvertedIndex();
+        UpdateIndexHandler theIndexHandler = new UpdateIndexHandler(theIndex);
+        Tokenizer theTokenizer = new Tokenizer(new ToLowercaseTokenHandler(theIndexHandler));
+
+        EventEmitter theIPC = theElectron.getIpcRenderer();
+        theIPC.on("document-loaded", (aEvent, aArg) -> {
+            BinaryDocumentData theData = (BinaryDocumentData) aArg;
+            Console.log("Document " + theData.getFilename() + " loaded, extracting pdf text");
+            theIPC.send("extract-pdf-text", aArg);
+        });
+
+        theIPC.on("text-extracted", (aEvent, aArg) -> {
+            TextDocumentData theData = (TextDocumentData) aArg;
+            Console.log("Extracted text received for " + theData.getFilename());
+            theTokenizer.process(new Document(theData.getFilename(), theData.getData()));
+        });
+
+        FilesystemScanner theScanner = new FilesystemScanner(theFilesystem, thePath);
+        theScanner.submitFile(theUserHome, new FilesystemScanner.FileProcessor() {
+            @Override
+            public boolean accepts(String aFileName, Stats aStats) {
+                return aFileName.toLowerCase().endsWith(".pdf");
             }
 
-            String theUserHome = theRemote.getApp().getPath("home");
+            @Override
+            public void handle(String aFileName) {
+                Console.log("Loading document " + aFileName + " in Background");
+                theIPC.send("load-document", JSString.valueOf(aFileName));
+            }
+        });
 
-            theUserHome = "/home/sertic/ownCloud/eBooks";
+        HTMLButtonElement theSearchButton = (HTMLButtonElement) WINDOW.getDocument().getElementById("search");
+        HTMLInputElement theSearchPhrase = (HTMLInputElement) WINDOW.getDocument().getElementById("searchphrase");
+        HTMLElement theSearchResult = WINDOW.getDocument().getElementById("searchresult");
 
-            HTMLDocument theDocument = WINDOW.getDocument();
-            HTMLElement theDiv = theDocument.createElement("div");
-            theDiv.setInnerHTML(theUserHome);
-            theDocument.getBody().appendChild(theDiv);
-
-            FS theFilesystem = theRemote.require("fs");
-            Path thePath = theRemote.require("path");
-            PDFJS thePDF = theRemote.require("pdfjs-dist");
-            thePDF.initializeWorker();
-
-            InvertedIndex theIndex = new InvertedIndex();
-            UpdateIndexHandler theIndexHandler = new UpdateIndexHandler(theIndex);
-            Tokenizer theTokenizer = new Tokenizer(new ToLowercaseTokenHandler(theIndexHandler));
-
-            FulltextIndexer theIndexer = new FulltextIndexer(theTokenizer, theFilesystem, thePDF);
-
-            FilesystemScanner theScanner = new FilesystemScanner(theFilesystem, thePath);
-            theScanner.submitFile(theUserHome, new FilesystemScanner.FileProcessor() {
-                @Override
-                public boolean accepts(String aFileName, Stats aStats) {
-                    return aFileName.toLowerCase().endsWith(".pdf");
-                }
-
-                @Override
-                public void handle(String aFileName) {
-                    theIndexer.submit(aFileName);
-                }
-            });
-
-            HTMLButtonElement theSearchButton = (HTMLButtonElement) WINDOW.getDocument().getElementById("search");
-            HTMLInputElement theSearchPhrase = (HTMLInputElement) WINDOW.getDocument().getElementById("searchphrase");
-            HTMLElement theSearchResult = WINDOW.getDocument().getElementById("searchresult");
-
-            theSearchButton.addEventListener("click", evt -> search(theIndex, theSearchPhrase.getValue(), theSearchResult));
-
-            Suggester theSuggester = new TokenSequenceSuggester("nothing");
-            SuggestResult theResult = theIndex.suggest(theSuggester);
-        } else {
-
-            Console.log("Running as worker " + theCluster.getWorker().getId());
-
-            Http theHTTP = theRemote.require("http");
-            theHTTP.createServer((aRequest, aResponse) -> {
-                aResponse.writeHead(200);
-                aResponse.end("Hello world!");
-            }).listen(9999);
-        }
+        theSearchButton.addEventListener("click", evt -> search(theIndex, theSearchPhrase.getValue(), theSearchResult));
     }
 
     private static void search(InvertedIndex aIndex, String aSearchPhrase, HTMLElement aSearchResult) {
