@@ -50,7 +50,7 @@ public class Main {
 
         String theUserHome = theRemote.getApp().getPath("home");
 
-        theUserHome = "/home/sertic/ownCloud/eBooks/Test";
+        theUserHome = "/home/sertic/ownCloud/eBooks";
 
         HTMLDocument theDocument = WINDOW.getDocument();
         HTMLElement theDiv = theDocument.createElement("div");
@@ -73,7 +73,7 @@ public class Main {
 
         theIPC.on("text-extracted", (aEvent, aArg) -> {
             TextDocumentData theData = (TextDocumentData) aArg;
-            Console.log("Extracted text received for " + theData.getFilename());
+            Console.log("Extracted text received for " + theData.getFilename() + " " +theData.getData().length());
             theTokenizer.process(new Document(theData.getFilename(), theData.getData()));
         });
 

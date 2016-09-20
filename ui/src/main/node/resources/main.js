@@ -63,33 +63,36 @@ electron.ipcMain.on('load-document', (event, arg) => {
 electron.ipcMain.on('extract-pdf-text', (event, arg) => {
     var theFileName = arg.filename
     var theBinaryData = arg.data
+    var thePageData = []
 
-    pdfjs.getDocument(theBinaryData).then(aDocument => {
-        var thePageData = []
-        for (var thePageCounter = 1; thePageCounter <= aDocument.numPages; thePageCounter++) {
-            aDocument.getPage(thePageCounter).then(aPage => {
-                aPage.getTextContent().then(aTextContent => {
-                    var theItems = aTextContent.items
-                    var theText = ""
-                    var theItemCounter;
-                    for (theItemCounter=0;theItemCounter<theItems.length;theItemCounter++) {
-                        theText+=theItems[theItemCounter].str
-                    }
+    var theDocumentPromise = pdfjs.getDocument(theBinaryData).then(function(aDocument) {
+        var theNumPages = aDocument.numPages;
 
-                    thePageData[aPage.pageIndex-1] = theText
+        var theLoadPageFunction = function(pageNum) {
 
-                    if (thePageData.length == aDocument.numPages - 1) {
-                        var theFullText = ""
-                        var thePage
-                        for (thePage=0;thePage < aDocument.numPages;thePage++) {
-                            theFullText += thePageData[thePage]
-                        }
-
-                        event.sender.send("text-extracted", {filename: theFileName, data: theFullText});
-                    }
-                })
+            return aDocument.getPage(pageNum).then(function (page) {
+                page.getTextContent().then(function (content) {
+                    var strings = content.items.map(function (item) {
+                        return item.str;
+                    });
+                    thePageData[pageNum] = strings.join(' ');
+                });
             })
         }
+
+        var theLastPromise = theDocumentPromise;
+
+        for (var i=1;i<=theNumPages;i++) {
+            theLastPromise = theLastPromise.then(theLoadPageFunction.bind(this, i))
+        }
+
+        theLastPromise.then(function() {
+            var theFullText = ""
+            for (var thePage=0;thePage < thePageData.length;thePage++) {
+                theFullText += thePageData[thePage]
+            }
+            event.sender.send("text-extracted", {filename: theFileName, data: theFullText});
+        })
     })
 })
 
