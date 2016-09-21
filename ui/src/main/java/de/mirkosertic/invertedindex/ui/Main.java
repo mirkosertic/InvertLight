@@ -49,6 +49,7 @@ public class Main {
         Remote theRemote = theElectron.getRemote();
 
         String theUserHome = theRemote.getApp().getPath("home");
+        theUserHome = "D:\\Mirko\\ownCloud\\Briefe und Schriftverkehr";
 
         HTMLDocument theDocument = WINDOW.getDocument();
         HTMLElement theDiv = theDocument.createElement("div");

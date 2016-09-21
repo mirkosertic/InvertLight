@@ -3,14 +3,48 @@
 const cluster = require("cluster")
 const fs = require("fs");
 const pdfjs = require("pdfjs-dist")
+var http = require('http');
 
 // Check if we are running as the master nde
 if (cluster.isMaster) {
 
-    console.log("Master " + process.pid + " is online");
-
     // Yes, so we bootup the whole electron magic
     const electron = require('electron')
+
+
+    //
+    // Offloading work to the worker processes
+    //
+
+    // Worker to extract content from files
+    cluster.on('disconnect', (worker) => {
+        console.log(`The worker #${worker.id} has disconnected`);
+    })
+
+    var theLoadDocumentWorker = cluster.fork();
+    theLoadDocumentWorker.on("online", () => {
+        console.log("Worker is online")
+    })
+
+    // Check if we get something back from
+    theLoadDocumentWorker.on("message", function(msg) {
+        if (msg.type && msg.type == "text-extracted") {
+            mainWindow.webContents.send("text-extracted", {filename: msg.filename, data: msg.data});
+        }
+    });
+
+    // Application specific long running tasks are run in the main process
+    // to prevent the renderer process from blocking
+    electron.ipcMain.on('load-document', (event, arg) => {
+        // We received an event, so we will forward it to the worker
+        if (theLoadDocumentWorker.isConnected()) {
+            theLoadDocumentWorker.send({type: "documentload", filename: arg})
+        }
+    })
+
+    // Now continue to perform init
+
+    console.log("Master " + process.pid + " is online");
 
     // Module to control application life.
     const app = electron.app
@@ -59,27 +93,6 @@ if (cluster.isMaster) {
             createWindow()
         }
     })
-
-    //
-    // Offloading work to the worker processes
-    //
-
-    // Worker to extract content from files
-    var theLoadDocumentWorker = cluster.fork();
-
-    // Check if we get something back from
-    theLoadDocumentWorker.on("message", function(msg) {
-        if (msg.type && msg.type == "text-extracted") {
-            mainWindow.webContents.send("text-extracted", {filename: msg.filename, data: msg.data});
-        }
-    });
-
-    // Application specific long running tasks are run in the main process
-    // to prevent the renderer process from blocking
-    electron.ipcMain.on('load-document', (event, arg) => {
-        // We received an event, so we will forward it to the worker
-        theLoadDocumentWorker.send({type: "documentload", filename : arg})
-})
 
     // In this file you can include the rest of your app's specific main process
     // code. You can also put them in separate files and require them here.
