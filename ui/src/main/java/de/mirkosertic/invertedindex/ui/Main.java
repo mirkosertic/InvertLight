@@ -50,8 +50,6 @@ public class Main {
 
         String theUserHome = theRemote.getApp().getPath("home");
 
-        theUserHome = "/home/sertic/ownCloud/eBooks";
-
         HTMLDocument theDocument = WINDOW.getDocument();
         HTMLElement theDiv = theDocument.createElement("div");
         theDiv.setInnerHTML(theUserHome);
@@ -65,12 +63,6 @@ public class Main {
         Tokenizer theTokenizer = new Tokenizer(new ToLowercaseTokenHandler(theIndexHandler));
 
         EventEmitter theIPC = theElectron.getIpcRenderer();
-        theIPC.on("document-loaded", (aEvent, aArg) -> {
-            BinaryDocumentData theData = (BinaryDocumentData) aArg;
-            Console.log("Document " + theData.getFilename() + " loaded, extracting pdf text");
-            theIPC.send("extract-pdf-text", aArg);
-        });
-
         theIPC.on("text-extracted", (aEvent, aArg) -> {
             TextDocumentData theData = (TextDocumentData) aArg;
             Console.log("Extracted text received for " + theData.getFilename() + " " +theData.getData().length());
