@@ -8,7 +8,7 @@ const electron = require('electron')
 //
 // Offloading work to the worker processes
 //
-var theLoadDocumentWorker = child_process.fork("./worker.js");
+var theLoadDocumentWorker = child_process.fork(`${__dirname}/worker.js`);
 theLoadDocumentWorker.on("online", () => {
     console.log("Worker is online")
 })
@@ -29,7 +29,8 @@ electron.ipcMain.on('load-document', (event, arg) => {
 
 // Now continue to perform init
 
-console.log("Master " + process.pid + " is online");
+console.log("Master " + process.pid + " is online")
+console.log(`Dir is ${__dirname}`)
 
 // Module to control application life.
 const app = electron.app
@@ -53,6 +54,7 @@ function createWindow () {
         // Dereference the window object, usually you would store windows
         // in an array if your app supports multi windows, this is the time
         // when you should delete the corresponding element.
+        theLoadDocumentWorker.kill()
         mainWindow = null
     })
 }
