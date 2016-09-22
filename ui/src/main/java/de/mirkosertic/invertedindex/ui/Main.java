@@ -34,6 +34,8 @@ import de.mirkosertic.invertedindex.ui.node.fs.Stats;
 import de.mirkosertic.invertedindex.ui.node.path.Path;
 import org.teavm.jso.browser.Window;
 import org.teavm.jso.core.JSString;
+import org.teavm.jso.dom.events.Event;
+import org.teavm.jso.dom.events.EventListener;
 import org.teavm.jso.dom.html.HTMLButtonElement;
 import org.teavm.jso.dom.html.HTMLElement;
 import org.teavm.jso.dom.html.HTMLInputElement;
@@ -52,7 +54,8 @@ public class Main {
         Remote theRemote = theElectron.getRemote();
 
         String theUserHome = theRemote.getApp().getPath("home");
-        theUserHome = "/home/sertic/ownCloud/Briefe und Schriftverkehr";
+        //theUserHome = "/home/sertic/ownCloud/Briefe und Schriftverkehr";
+        theUserHome = "D:\\Mirko\\ownCloud\\Briefe und Schriftverkehr";
 
         FS theFilesystem = theRemote.require("fs");
         Path thePath = theRemote.require("path");
@@ -86,11 +89,12 @@ public class Main {
             }
         });
 
-        HTMLDataList theSuggestions = (HTMLDataList) WINDOW.getDocument().getElementById("suggestions");
+        HTMLElement theSuggestions = WINDOW.getDocument().getElementById("suggestions");
+        clearChildren(theSuggestions);
 
         HTMLButtonElement theSearchButton = (HTMLButtonElement) WINDOW.getDocument().getElementById("performsearch");
         HTMLInputElement theSearchPhrase = (HTMLInputElement) WINDOW.getDocument().getElementById("searchphrase");
-        theSearchPhrase.addEventListener("keypress", evt -> suggest(theIndex, theSearchPhrase.getValue(), theSuggestions));
+        theSearchPhrase.addEventListener("keypress", evt -> suggest(theIndex, theSearchPhrase.getValue(), theSuggestions, theSearchPhrase));
 
         HTMLElement theSearchResult = WINDOW.getDocument().getElementById("searchresult");
 
@@ -105,7 +109,7 @@ public class Main {
         }
     }
 
-    private static void suggest(InvertedIndex aIndex, String aSearchPhrase, HTMLDataList aSuggestions) {
+    private static void suggest(InvertedIndex aIndex, String aSearchPhrase, HTMLElement aSuggestions, HTMLInputElement aSearchPhraseElement) {
 
         clearChildren(aSuggestions);
 
@@ -116,12 +120,20 @@ public class Main {
         String[] theTokensArray = theTokens.toArray(new String[theTokens.size()]);
         if (theTokensArray.length>1) {
             theTokensArray[theTokensArray.length-1] = theTokensArray[theTokensArray.length-1] + "*";
+        } else {
+            return;
         }
 
         TokenSequenceSuggester theSuggester = new TokenSequenceSuggester(theTokensArray);
         SuggestResult theResult = theSuggester.suggestWith(aIndex);
         Console.log("Suggestions for : " + aSearchPhrase);
+
+        aSuggestions.getStyle().setProperty("display", "node");
+
         for (String theSuggestion : theResult.getSuggestions()) {
+
+            aSuggestions.getStyle().setProperty("display", "block");
+
             String theValue = "";
             for (int i=0;i<theTokens.size() - 1;i++) {
                 if (theValue.length() > 0) {
@@ -132,14 +144,28 @@ public class Main {
             if (theValue.length() > 0) {
                 theValue = theValue + " ";
             }
-            theValue += theSuggestion;
 
-            Console.log("Search suggestion : " + theValue);
+            final String theFinalValue = theValue + theSuggestion;
 
-            HTMLOptionElement theNewOption = (HTMLOptionElement) WINDOW.getDocument().createElement("option");
-            theNewOption.setValue(theValue);
+            Console.log("Search suggestion : " + theFinalValue);
 
-            aSuggestions.appendChild(theNewOption);
+            EventListener<Event> theClick = evt -> aSearchPhraseElement.setValue(theFinalValue);
+
+            HTMLElement theSingleSuggestion = WINDOW.getDocument().createElement("div");
+            HTMLElement theTypedSpan = WINDOW.getDocument().createElement("span");
+            theTypedSpan.setAttribute("class", "typed");
+            theTypedSpan.setInnerHTML(theValue);
+            theTypedSpan.addEventListener("click", theClick);
+
+            HTMLElement theSuggest = WINDOW.getDocument().createElement("span");
+            theSuggest.setAttribute("class", "suggestion");
+            theSuggest.setInnerHTML(theSuggestion);
+            theSuggest.addEventListener("click", theClick);
+
+            theSingleSuggestion.appendChild(theTypedSpan);
+            theSingleSuggestion.appendChild(theSuggest);
+
+            aSuggestions.appendChild(theSingleSuggestion);
         }
     }
 

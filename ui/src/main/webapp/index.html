@@ -9,7 +9,13 @@
 </head>
 <body onload="main()">
     <div class="header">
-        <input id="searchphrase" list="suggestions2"><button id="performsearch" type="button">Search</button>
+        <div id="completeinput">
+            <input id="searchphrase">
+            <div id="suggestions">
+                <div><span class="typed">a b c </span><span class="suggestion">e</span></div>
+                <div><span class="typed">a b c </span><span class="suggestion">e</span></div>
+            </div>
+        </div><button id="performsearch" type="button">Search</button>
     </div>
     <div id="stats"></div>
     <div id="searchresult">
@@ -19,13 +25,6 @@
             <div class="highlights">Test Test Test Test...</div>
         </div>
     </div>
-    <datalist id="suggestions">
-    </datalist>
-
-    <datalist id="suggestions2">
-        <option value="mirko sertic">mirko sertic</option>
-        <option value="mirko sertic monbijou">mirko sertic monbijou</option>
-    </datalist>
 
 </body>
 </html>

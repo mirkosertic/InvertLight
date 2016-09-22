@@ -12,18 +12,31 @@ body {
   display: flex;
   flex-flow: row;
 }
-.header #suggestions {
-  position: absolute;
-  left: 0px;
-  top: 0px;
-}
-.header #searchphrase {
-  border: 2px solid #2980b9;
+.header #completeinput {
   flex-grow: 10;
   position: relative;
 }
-.header #searchphrase:hover {
+.header #completeinput #searchphrase {
+  border: 2px solid #2980b9;
+  width: 100%;
+}
+.header #completeinput #searchphrase:hover {
   border: 2px solid #6ab0de;
+}
+.header #completeinput #suggestions {
+  position: absolute;
+  border: 1px solid black;
+  width: 100%;
+  background: white;
+}
+.header #completeinput #suggestions div {
+  margin-left: 0.2em;
+}
+.header #completeinput #suggestions div .typed {
+  font-weight: bold;
+}
+.header #completeinput #suggestions div .suggestion {
+  color: gray;
 }
 .header #performsearch {
   margin-left: 0.5em;
