@@ -25,6 +25,7 @@ import de.mirkosertic.invertedindex.core.Tokenizer;
 import de.mirkosertic.invertedindex.core.UpdateIndexHandler;
 import de.mirkosertic.invertedindex.ui.electron.Electron;
 import de.mirkosertic.invertedindex.ui.electron.Remote;
+import de.mirkosertic.invertedindex.ui.electron.Shell;
 import de.mirkosertic.invertedindex.ui.node.events.EventEmitter;
 import de.mirkosertic.invertedindex.ui.node.fs.FS;
 import de.mirkosertic.invertedindex.ui.node.fs.Stats;
@@ -32,7 +33,6 @@ import de.mirkosertic.invertedindex.ui.node.path.Path;
 import org.teavm.jso.browser.Window;
 import org.teavm.jso.core.JSString;
 import org.teavm.jso.dom.html.HTMLButtonElement;
-import org.teavm.jso.dom.html.HTMLDocument;
 import org.teavm.jso.dom.html.HTMLElement;
 import org.teavm.jso.dom.html.HTMLInputElement;
 
@@ -49,12 +49,7 @@ public class Main {
         Remote theRemote = theElectron.getRemote();
 
         String theUserHome = theRemote.getApp().getPath("home");
-        theUserHome = "D:\\Mirko\\ownCloud\\Briefe und Schriftverkehr";
-
-        HTMLDocument theDocument = WINDOW.getDocument();
-        HTMLElement theDiv = theDocument.createElement("div");
-        theDiv.setInnerHTML(theUserHome);
-        theDocument.getBody().appendChild(theDiv);
+        theUserHome = "/home/sertic/ownCloud/Briefe und Schriftverkehr";
 
         FS theFilesystem = theRemote.require("fs");
         Path thePath = theRemote.require("path");
@@ -63,11 +58,15 @@ public class Main {
         UpdateIndexHandler theIndexHandler = new UpdateIndexHandler(theIndex);
         Tokenizer theTokenizer = new Tokenizer(new ToLowercaseTokenHandler(theIndexHandler));
 
+        HTMLElement theStats = (HTMLElement) WINDOW.getDocument().getElementById("stats");
+
         EventEmitter theIPC = theElectron.getIpcRenderer();
         theIPC.on("text-extracted", (aEvent, aArg) -> {
             TextDocumentData theData = (TextDocumentData) aArg;
             Console.log("Extracted text received for " + theData.getFilename() + " " +theData.getData().length());
             theTokenizer.process(new Document(theData.getFilename(), theData.getData()));
+
+            theStats.setInnerHTML(theIndex.getDocumentCount() + " documents indexed");
         });
 
         FilesystemScanner theScanner = new FilesystemScanner(theFilesystem, thePath);
@@ -84,17 +83,24 @@ public class Main {
             }
         });
 
-        HTMLButtonElement theSearchButton = (HTMLButtonElement) WINDOW.getDocument().getElementById("search");
+        HTMLButtonElement theSearchButton = (HTMLButtonElement) WINDOW.getDocument().getElementById("performsearch");
         HTMLInputElement theSearchPhrase = (HTMLInputElement) WINDOW.getDocument().getElementById("searchphrase");
         HTMLElement theSearchResult = WINDOW.getDocument().getElementById("searchresult");
 
-        theSearchButton.addEventListener("click", evt -> search(theIndex, theSearchPhrase.getValue(), theSearchResult));
+        theSearchButton.addEventListener("click", evt -> search(theIndex, theSearchPhrase.getValue(), theSearchResult, theElectron.getShell()));
+
+        clearChildren(theSearchResult);
     }
 
-    private static void search(InvertedIndex aIndex, String aSearchPhrase, HTMLElement aSearchResult) {
-        StringBuilder theResult = new StringBuilder();
-        theResult.append(aIndex.getDocumentCount()+ " documents in index");
-        theResult.append("<br>");
+    private static void clearChildren(HTMLElement aElement) {
+        while(aElement.getChildNodes().getLength() > 0)  {
+            aElement.removeChild(aElement.getChildNodes().item(0));
+        }
+    }
+
+    private static void search(InvertedIndex aIndex, String aSearchPhrase, HTMLElement aSearchResult, Shell aShell) {
+
+        clearChildren(aSearchResult);
 
         ArrayList<String> theTokens = new ArrayList<>();
         for (StringTokenizer theTokenizer = new StringTokenizer(aSearchPhrase, " "); theTokenizer.hasMoreTokens();) {
@@ -106,14 +112,30 @@ public class Main {
         Result theQueryResult = aIndex.query(theQuery);
         long theDuration = System.currentTimeMillis() - theStart;
 
-        theResult.append(theDuration+"ms query time<br>");
-        theResult.append(theQueryResult.getSize()+" documents found<br>");
         for (int i=0;i<theQueryResult.getSize();i++) {
             IndexedDoc theDoc = theQueryResult.getDoc(i);
-            theResult.append(theDoc.getName());
-            theResult.append("<br/>");
-        }
 
-        aSearchResult.setInnerHTML(theResult.toString());
+            HTMLElement theEntry = WINDOW.getDocument().createElement("div");
+            theEntry.setAttribute("class", "result");
+
+            HTMLElement theTitle = WINDOW.getDocument().createElement("div");
+            theTitle.setAttribute("class", "title");
+            theTitle.setInnerHTML(theDoc.getName());
+            theTitle.addEventListener("click", evt -> aShell.openItem(theDoc.getName()));
+
+            HTMLElement theFilename = WINDOW.getDocument().createElement("div");
+            theFilename.setAttribute("class", "filename");
+            theFilename.setInnerHTML(theDoc.getName());
+
+            HTMLElement theHighlights = WINDOW.getDocument().createElement("div");
+            theHighlights.setAttribute("class", "highlights");
+            theHighlights.setInnerHTML("lala lala lala");
+
+            theEntry.appendChild(theTitle);
+            theEntry.appendChild(theFilename);
+            theEntry.appendChild(theHighlights);
+
+            aSearchResult.appendChild(theEntry);
+        }
     }
 }

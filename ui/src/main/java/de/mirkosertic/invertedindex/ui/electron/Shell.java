@@ -15,25 +15,9 @@
  */
 package de.mirkosertic.invertedindex.ui.electron;
 
-import de.mirkosertic.invertedindex.ui.node.events.EventEmitter;
+import org.teavm.jso.JSObject;
 
-import org.teavm.jso.JSBody;
-import org.teavm.jso.JSProperty;
+public abstract class Shell implements JSObject {
 
-public abstract class Electron extends EventEmitter implements Scope {
-
-    @JSBody(params = {}, script = "return (window && window.process && window.process.type);")
-    public static native boolean available();
-
-    @JSBody(params = {}, script = "return require('electron');")
-    public static native Electron require();
-
-    @JSProperty
-    public abstract Remote getRemote();
-
-    @JSProperty
-    public abstract EventEmitter getIpcRenderer();
-
-    @JSProperty
-    public abstract Shell getShell();
+    public abstract void openItem(String aPath);
 }

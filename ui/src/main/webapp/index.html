@@ -1,6 +1,6 @@
 <html>
 <head>
-    <title>InvertLight User Interface</title>
+    <title>InvertLight Desktop Search</title>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <link rel="stylesheet" href="css/style.css"/>
@@ -8,9 +8,16 @@
     <script type="text/javascript" charset="utf-8" src="teavm/classes.js"></script>
 </head>
 <body onload="main()">
-    <input id="searchphrase"><button id="search" value="Search">Search</button>
+    <div class="header">
+        <input id="searchphrase"><button id="performsearch" type="button">Search</button>
+    </div>
+    <div id="stats"></div>
     <div id="searchresult">
-
+        <div class="result">
+            <div class="title">Testtitle</div>
+            <div class="filename">Filename</div>
+            <div class="highlights">Test Test Test Test...</div>
+        </div>
     </div>
 </body>
 </html>

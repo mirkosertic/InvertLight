@@ -1,3 +1,58 @@
 body {
   background-color: white;
+  display: flex;
+  padding: 0;
+  margin: 0;
+  flex-flow: column;
+}
+.header {
+  padding: 0.2em;
+  flex-shrink: 1;
+  background-color: #7f8c8d;
+  display: flex;
+  flex-flow: row;
+}
+.header #searchphrase {
+  border: 2px solid #2980b9;
+  flex-grow: 10;
+}
+.header #searchphrase:hover {
+  border: 2px solid #6ab0de;
+}
+.header #performsearch {
+  margin-left: 0.5em;
+  width: 5em;
+  border: 1px solid #16a085;
+  background-color: #16a085;
+  color: white;
+  font-weight: bold;
+}
+.header #performsearch:hover {
+  border: 1px solid #1ccdaa;
+  background-color: #1ccdaa;
+}
+#stats {
+  flex-shrink: 1;
+  background-color: #d0d5d5;
+  padding: 0.1em;
+}
+#searchresult {
+  flex-grow: 1;
+  display: flex;
+  flex-flow: column;
+  padding: 0.5em;
+}
+#searchresult .result .title {
+  padding-top: 0.1em;
+  color: blue;
+  font-weight: bold;
+  font-size: larger;
+}
+#searchresult .result .filename {
+  padding-top: 0.2em;
+  font-weight: bold;
+  color: #27ae60;
+}
+#searchresult .result .highlights {
+  padding-top: 0.1em;
 }

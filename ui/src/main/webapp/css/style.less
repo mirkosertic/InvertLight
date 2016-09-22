@@ -1,3 +1,67 @@
 body {
   background-color: white;
+  display: flex;
+  padding: 0;
+  margin: 0;
+  flex-flow: column;
+}
+
+.header {
+  padding: 0.2em;
+  flex-shrink: 1;
+  background-color: #7f8c8d;
+  display: flex;
+  flex-flow: row;
+
+  #searchphrase {
+    border: 2px solid #2980b9;
+    flex-grow: 10;
+    &:hover {
+      border: 2px solid lighten(#2980b9, 20%);
+    }
+  }
+
+  #performsearch {
+    margin-left: 0.5em;
+    width: 5em;
+    border: 1px solid #16a085;
+    background-color: #16a085;
+    color: white;
+    font-weight: bold;
+
+    &:hover {
+      border: 1px solid lighten(#16a085, 10%);
+      background-color: lighten(#16a085, 10%);
+    }
+  }
+}
+
+#stats {
+  flex-shrink: 1;
+  background-color: lighten(#7f8c8d, 30%);
+  padding: 0.1em;
+}
+
+#searchresult {
+  flex-grow: 1;
+  display: flex;
+  flex-flow: column;
+  padding: 0.5em;
+
+  .result {
+    .title {
+      padding-top: 0.1em;
+      color: blue;
+      font-weight: bold;
+      font-size: larger;
+    }
+    .filename {
+      padding-top: 0.2em;
+      font-weight: bold;
+      color: #27ae60;
+    }
+    .highlights {
+      padding-top: 0.1em;
+    }
+  }
 }
