@@ -46,6 +46,10 @@ public class TokenDictionary {
         return idToTokens.get(aTokenID);
     }
 
+    public int getTokensCount() {
+        return tokensToID.size();
+    }
+
     public boolean isWildCard(String aToken) {
         return aToken.contains("?") || aToken.contains("*");
     }

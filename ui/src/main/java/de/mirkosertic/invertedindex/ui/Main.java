@@ -19,8 +19,10 @@ import de.mirkosertic.invertedindex.core.Document;
 import de.mirkosertic.invertedindex.core.IndexedDoc;
 import de.mirkosertic.invertedindex.core.InvertedIndex;
 import de.mirkosertic.invertedindex.core.Result;
+import de.mirkosertic.invertedindex.core.SuggestResult;
 import de.mirkosertic.invertedindex.core.ToLowercaseTokenHandler;
 import de.mirkosertic.invertedindex.core.TokenSequenceQuery;
+import de.mirkosertic.invertedindex.core.TokenSequenceSuggester;
 import de.mirkosertic.invertedindex.core.Tokenizer;
 import de.mirkosertic.invertedindex.core.UpdateIndexHandler;
 import de.mirkosertic.invertedindex.ui.electron.Electron;
@@ -35,6 +37,7 @@ import org.teavm.jso.core.JSString;
 import org.teavm.jso.dom.html.HTMLButtonElement;
 import org.teavm.jso.dom.html.HTMLElement;
 import org.teavm.jso.dom.html.HTMLInputElement;
+import org.teavm.jso.dom.html.HTMLOptionElement;
 
 import java.util.ArrayList;
 import java.util.StringTokenizer;
@@ -66,7 +69,7 @@ public class Main {
             Console.log("Extracted text received for " + theData.getFilename() + " " +theData.getData().length());
             theTokenizer.process(new Document(theData.getFilename(), theData.getData()));
 
-            theStats.setInnerHTML(theIndex.getDocumentCount() + " documents indexed");
+            theStats.setInnerHTML(theIndex.getDocumentCount() + " documents indexed, " + theIndex.getTokenDictionary().getTokensCount()+" unique tokens");
         });
 
         FilesystemScanner theScanner = new FilesystemScanner(theFilesystem, thePath);
@@ -83,8 +86,12 @@ public class Main {
             }
         });
 
+        HTMLDataList theSuggestions = (HTMLDataList) WINDOW.getDocument().getElementById("suggestions");
+
         HTMLButtonElement theSearchButton = (HTMLButtonElement) WINDOW.getDocument().getElementById("performsearch");
         HTMLInputElement theSearchPhrase = (HTMLInputElement) WINDOW.getDocument().getElementById("searchphrase");
+        theSearchPhrase.addEventListener("keypress", evt -> suggest(theIndex, theSearchPhrase.getValue(), theSuggestions));
+
         HTMLElement theSearchResult = WINDOW.getDocument().getElementById("searchresult");
 
         theSearchButton.addEventListener("click", evt -> search(theIndex, theSearchPhrase.getValue(), theSearchResult, theElectron.getShell()));
@@ -95,6 +102,44 @@ public class Main {
     private static void clearChildren(HTMLElement aElement) {
         while(aElement.getChildNodes().getLength() > 0)  {
             aElement.removeChild(aElement.getChildNodes().item(0));
+        }
+    }
+
+    private static void suggest(InvertedIndex aIndex, String aSearchPhrase, HTMLDataList aSuggestions) {
+
+        clearChildren(aSuggestions);
+
+        ArrayList<String> theTokens = new ArrayList<>();
+        for (StringTokenizer theTokenizer = new StringTokenizer(aSearchPhrase, " "); theTokenizer.hasMoreTokens();) {
+            theTokens.add(theTokenizer.nextToken());
+        }
+        String[] theTokensArray = theTokens.toArray(new String[theTokens.size()]);
+        if (theTokensArray.length>1) {
+            theTokensArray[theTokensArray.length-1] = theTokensArray[theTokensArray.length-1] + "*";
+        }
+
+        TokenSequenceSuggester theSuggester = new TokenSequenceSuggester(theTokensArray);
+        SuggestResult theResult = theSuggester.suggestWith(aIndex);
+        Console.log("Suggestions for : " + aSearchPhrase);
+        for (String theSuggestion : theResult.getSuggestions()) {
+            String theValue = "";
+            for (int i=0;i<theTokens.size() - 1;i++) {
+                if (theValue.length() > 0) {
+                    theValue = theValue + " ";
+                }
+                theValue += theTokens.get(i);
+            }
+            if (theValue.length() > 0) {
+                theValue = theValue + " ";
+            }
+            theValue += theSuggestion;
+
+            Console.log("Search suggestion : " + theValue);
+
+            HTMLOptionElement theNewOption = (HTMLOptionElement) WINDOW.getDocument().createElement("option");
+            theNewOption.setValue(theValue);
+
+            aSuggestions.appendChild(theNewOption);
         }
     }
 

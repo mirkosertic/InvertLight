@@ -28,6 +28,8 @@ public class TokenDictionaryTest {
         theDictionary.getTokenIDFor("test2abc");
         theDictionary.getTokenIDFor("test1def");
 
+        assertEquals(3, theDictionary.getTokensCount());
+
         String[] theResult1 = theDictionary.rewriteToken("test1abc");
         assertEquals(1, theResult1.length);
         assertEquals("test1abc", theResult1[0]);
